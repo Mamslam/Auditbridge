@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL local (simule Supabase) ──────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: auditbridge_postgres
+    environment:
+      POSTGRES_DB: auditbridge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./supabase/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auditbridge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Upstash simulé localement) ────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: auditbridge_redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend .NET 8 API ───────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: auditbridge_api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=auditbridge;Username=postgres;Password=postgres
+      - Clerk__Domain=${CLERK_DOMAIN}
+      - Clerk__WebhookSecret=${CLERK_WEBHOOK_SECRET}
+      - Cors__AllowedOrigins__0=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Frontend Next.js ─────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: auditbridge_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Soumettre",
+    "error": "Une erreur est survenue",
+    "success": "Opération réussie"
+  },
+  "onboarding": {
+    "title": "Bienvenue sur AuditBridge",
+    "subtitle": "Choisissez votre profil pour commencer",
+    "auditor": {
+      "title": "Auditeur / Cabinet d'audit",
+      "description": "Créez des audits, gérez vos clients et générez des rapports professionnels avec l'IA."
+    },
+    "client": {
+      "title": "Entreprise cliente",
+      "description": "Répondez aux audits, soumettez vos preuves et suivez vos actions correctives (CAPA)."
+    },
+    "step1": "Choix du profil",
+    "step2": "Informations de l'organisation",
+    "step3": "Inviter l'équipe",
+    "step4": "Configuration",
+    "step5": "Finalisation",
+    "orgName": "Nom de l'organisation",
+    "orgNamePlaceholder": "ex: Cabinet Dupont & Associés",
+    "country": "Pays",
+    "language": "Langue de travail",
+    "invite": "Inviter des membres",
+    "inviteEmail": "Adresse email",
+    "inviteRole": "Rôle",
+    "inviteAdd": "Ajouter",
+    "complete": "Accéder au tableau de bord"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "audits": "Audits",
+    "templates": "Templates",
+    "clients": "Clients",
+    "reports": "Rapports",
+    "documents": "Documents",
+    "capa": "Actions CAPA",
+    "settings": "Paramètres",
+    "billing": "Facturation"
+  },
+  "dashboard": {
+    "auditor": {
+      "title": "Tableau de bord Auditeur",
+      "activeAudits": "Audits actifs",
+      "avgCompliance": "Conformité moyenne",
+      "openCapa": "CAPA ouvertes",
+      "completedAudits": "Audits terminés"
+    },
+    "client": {
+      "title": "Tableau de bord",
+      "ongoingAudits": "Audits en cours",
+      "complianceScore": "Score de conformité",
+      "openCapa": "CAPA à traiter",
+      "nextAudit": "Prochain audit"
+    }
+  }
+}

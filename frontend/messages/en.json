@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "error": "An error occurred",
+    "success": "Operation successful"
+  },
+  "onboarding": {
+    "title": "Welcome to AuditBridge",
+    "subtitle": "Choose your profile to get started",
+    "auditor": {
+      "title": "Auditor / Audit firm",
+      "description": "Create audits, manage your clients and generate professional reports with AI."
+    },
+    "client": {
+      "title": "Client company",
+      "description": "Respond to audits, submit your evidence and track your corrective actions (CAPA)."
+    },
+    "step1": "Profile selection",
+    "step2": "Organization info",
+    "step3": "Invite team",
+    "step4": "Configuration",
+    "step5": "Finalization",
+    "orgName": "Organization name",
+    "orgNamePlaceholder": "e.g. Smith & Partners Audit",
+    "country": "Country",
+    "language": "Working language",
+    "invite": "Invite members",
+    "inviteEmail": "Email address",
+    "inviteRole": "Role",
+    "inviteAdd": "Add",
+    "complete": "Access dashboard"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "audits": "Audits",
+    "templates": "Templates",
+    "clients": "Clients",
+    "reports": "Reports",
+    "documents": "Documents",
+    "capa": "CAPA Actions",
+    "settings": "Settings",
+    "billing": "Billing"
+  },
+  "dashboard": {
+    "auditor": {
+      "title": "Auditor Dashboard",
+      "activeAudits": "Active audits",
+      "avgCompliance": "Average compliance",
+      "openCapa": "Open CAPA",
+      "completedAudits": "Completed audits"
+    },
+    "client": {
+      "title": "Dashboard",
+      "ongoingAudits": "Ongoing audits",
+      "complianceScore": "Compliance score",
+      "openCapa": "Open CAPA",
+      "nextAudit": "Next audit"
+    }
+  }
+}

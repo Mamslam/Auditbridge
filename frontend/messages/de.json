@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Einreichen",
+    "error": "Ein Fehler ist aufgetreten",
+    "success": "Vorgang erfolgreich"
+  },
+  "onboarding": {
+    "title": "Willkommen bei AuditBridge",
+    "subtitle": "Wählen Sie Ihr Profil, um zu beginnen",
+    "auditor": {
+      "title": "Prüfer / Prüfungsgesellschaft",
+      "description": "Erstellen Sie Audits, verwalten Sie Ihre Kunden und generieren Sie professionelle Berichte mit KI."
+    },
+    "client": {
+      "title": "Kundenunternehmen",
+      "description": "Beantworten Sie Audits, reichen Sie Ihre Nachweise ein und verfolgen Sie Ihre Korrekturmaßnahmen (CAPA)."
+    },
+    "step1": "Profilauswahl",
+    "step2": "Organisationsinfo",
+    "step3": "Team einladen",
+    "step4": "Konfiguration",
+    "step5": "Abschluss",
+    "orgName": "Organisationsname",
+    "orgNamePlaceholder": "z.B. Müller & Partner GmbH",
+    "country": "Land",
+    "language": "Arbeitssprache",
+    "invite": "Mitglieder einladen",
+    "inviteEmail": "E-Mail-Adresse",
+    "inviteRole": "Rolle",
+    "inviteAdd": "Hinzufügen",
+    "complete": "Zum Dashboard"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "audits": "Audits",
+    "templates": "Vorlagen",
+    "clients": "Kunden",
+    "reports": "Berichte",
+    "documents": "Dokumente",
+    "capa": "CAPA-Maßnahmen",
+    "settings": "Einstellungen",
+    "billing": "Abrechnung"
+  },
+  "dashboard": {
+    "auditor": {
+      "title": "Prüfer-Dashboard",
+      "activeAudits": "Aktive Audits",
+      "avgCompliance": "Durchschnittliche Konformität",
+      "openCapa": "Offene CAPA",
+      "completedAudits": "Abgeschlossene Audits"
+    },
+    "client": {
+      "title": "Dashboard",
+      "ongoingAudits": "Laufende Audits",
+      "complianceScore": "Konformitätspunktzahl",
+      "openCapa": "Offene CAPA",
+      "nextAudit": "Nächstes Audit"
+    }
+  }
+}
