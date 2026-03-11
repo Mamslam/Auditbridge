@@ -3,59 +3,61 @@ namespace AuditBridge.Domain.Entities;
 public class AuditResponse
 {
     public Guid Id { get; private set; }
-    public Guid CampaignId { get; private set; }
+    public Guid AuditId { get; private set; }
     public Guid QuestionId { get; private set; }
-    public Guid RespondedBy { get; private set; }
-    public string? ResponseValue { get; private set; }
-    public string? ResponseDataJson { get; private set; }
-    public string? AuditorNote { get; private set; }
-    public AuditorRating? AuditorRating { get; private set; }
-    public DateTimeOffset? SubmittedAt { get; private set; }
+    public Guid? AnsweredBy { get; private set; }
+    public bool AnsweredByClient { get; private set; }
+    public string? AnswerValue { get; private set; }
+    public string? AnswerNotes { get; private set; }
+    public string? Conformity { get; private set; }
+    // 'conform' | 'non_conform' | 'partial' | 'na' | 'pending'
+    public string? AuditorComment { get; private set; }
+    public bool IsFlagged { get; private set; }
+    public string? AiAnalysis { get; private set; }  // JSON
+    public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
     private AuditResponse() { }
 
     public static AuditResponse Create(
-        Guid campaignId,
-        Guid questionId,
-        Guid respondedBy)
-    {
-        return new AuditResponse
+        Guid auditId, Guid questionId,
+        Guid? answeredBy = null, bool answeredByClient = false)
+        => new()
         {
             Id = Guid.NewGuid(),
-            CampaignId = campaignId,
+            AuditId = auditId,
             QuestionId = questionId,
-            RespondedBy = respondedBy,
+            AnsweredBy = answeredBy,
+            AnsweredByClient = answeredByClient,
+            Conformity = "pending",
+            CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
-    }
 
-    public void SetResponse(string? value, string? dataJson = null)
+    public void SetAnswer(string? value, string? notes, bool byClient = false)
     {
-        ResponseValue = value;
-        ResponseDataJson = dataJson;
+        AnswerValue = value;
+        AnswerNotes = notes;
+        AnsweredByClient = byClient;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void Submit()
+    public void SetConformity(string conformity, string? auditorComment = null)
     {
-        SubmittedAt = DateTimeOffset.UtcNow;
+        Conformity = conformity;
+        AuditorComment = auditorComment;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void AddAuditorNote(string note, AuditorRating? rating = null)
+    public void SetAiAnalysis(string analysisJson)
     {
-        AuditorNote = note;
-        AuditorRating = rating;
+        AiAnalysis = analysisJson;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
-}
 
-public enum AuditorRating
-{
-    Compliant,
-    Minor,
-    Major,
-    Critical,
-    NA
+    public void Flag(bool flagged = true)
+    {
+        IsFlagged = flagged;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 }

@@ -306,7 +306,7 @@ export default function OnboardingPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="country">Pays</Label>
-                    <Select value={country} onValueChange={setCountry}>
+                    <Select value={country} onValueChange={(v) => v && setCountry(v)}>
                       <SelectTrigger id="country" className="mt-1.5">
                         <SelectValue />
                       </SelectTrigger>
@@ -322,7 +322,7 @@ export default function OnboardingPage() {
 
                   <div>
                     <Label htmlFor="language">Langue de travail</Label>
-                    <Select value={language} onValueChange={setLanguage}>
+                    <Select value={language} onValueChange={(v) => v && setLanguage(v)}>
                       <SelectTrigger id="language" className="mt-1.5">
                         <SelectValue />
                       </SelectTrigger>
@@ -381,7 +381,7 @@ export default function OnboardingPage() {
                     className="flex-1"
                     onKeyDown={(e) => e.key === "Enter" && handleAddInvite()}
                   />
-                  <Select value={inviteRole} onValueChange={setInviteRole}>
+                  <Select value={inviteRole} onValueChange={(v) => v && setInviteRole(v)}>
                     <SelectTrigger className="w-48">
                       <SelectValue placeholder="Rôle" />
                     </SelectTrigger>

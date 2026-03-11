@@ -1,0 +1,72 @@
+{
+  "referential_code": "IFS_FOOD",
+  "sections": [
+    {
+      "code": "GOUVERNANCE",
+      "title": "Gouvernance et engagement de la direction",
+      "questions": [
+        {
+          "code": "IFS.1.1",
+          "question": "La direction a-t-elle défini et documenté une politique qualité et sécurité des aliments avec des objectifs mesurables ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique qualité/sécurité alimentaire", "Indicateurs et objectifs définis"]
+        },
+        {
+          "code": "IFS.1.2",
+          "question": "La direction alloue-t-elle des ressources suffisantes pour atteindre les objectifs qualité et sécurité ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Budget alloué", "Effectifs et compétences disponibles"]
+        }
+      ]
+    },
+    {
+      "code": "HACCP_SECURITE",
+      "title": "Système HACCP et sécurité des aliments",
+      "questions": [
+        {
+          "code": "IFS.2.1",
+          "question": "L'analyse des dangers est-elle complète et actualisée après chaque changement de produit ou procédé ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Analyse des dangers mise à jour", "Procédure de révision du HACCP"]
+        },
+        {
+          "code": "IFS.2.2",
+          "question": "Les limites critiques de chaque CCP sont-elles validées scientifiquement et documentées ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Justification scientifique des limites critiques", "Plan HACCP"]
+        }
+      ]
+    },
+    {
+      "code": "PRODUCTION_QUALITE",
+      "title": "Maîtrise de la production et contrôles qualité",
+      "questions": [
+        {
+          "code": "IFS.3.1",
+          "question": "Les spécifications des matières premières et produits finis sont-elles documentées et respectées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Cahiers des charges fournisseurs", "Spécifications produits finis"]
+        },
+        {
+          "code": "IFS.3.2",
+          "question": "Les contrôles en cours de production et les analyses de laboratoire sont-ils réalisés selon un plan défini ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Plan de contrôle qualité", "Résultats d'analyses et certificats labo"]
+        },
+        {
+          "code": "IFS.3.3",
+          "question": "La traçabilité des produits (de la matière première au produit fini livré) est-elle assurée en moins de 4 heures ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Test de traçabilité documenté", "Système d'information traçabilité"]
+        }
+      ]
+    }
+  ]
+}

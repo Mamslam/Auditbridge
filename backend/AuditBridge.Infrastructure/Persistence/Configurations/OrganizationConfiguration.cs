@@ -26,12 +26,8 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
         builder.Property(o => o.CreatedAt).HasColumnName("created_at");
         builder.Property(o => o.UpdatedAt).HasColumnName("updated_at");
 
-        builder.HasMany(o => o.Users)
-            .WithOne(u => u.Organization)
-            .HasForeignKey(u => u.OrganizationId);
-
-        // Map backing fields for read-only collections
         builder.Navigation(o => o.Users).HasField("_users").UsePropertyAccessMode(PropertyAccessMode.Field);
-        builder.Navigation(o => o.Templates).HasField("_templates").UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.Navigation(o => o.Referentials).HasField("_referentials").UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.Navigation(o => o.Audits).HasField("_audits").UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

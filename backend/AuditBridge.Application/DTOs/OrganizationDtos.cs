@@ -7,8 +7,8 @@ public record CreateOrganizationRequest(
     OrganizationType Type,
     string CountryCode,
     string Language,
-    string OwnerClerkId,
-    string OwnerEmail,
+    string? OwnerClerkId,
+    string? OwnerEmail,
     string? OwnerFullName,
     IReadOnlyList<InviteMemberRequest>? Invites = null
 );

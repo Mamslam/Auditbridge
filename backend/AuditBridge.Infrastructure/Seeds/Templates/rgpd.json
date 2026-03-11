@@ -1,0 +1,92 @@
+{
+  "referential_code": "RGPD",
+  "sections": [
+    {
+      "code": "ART13",
+      "title": "Art. 13-14 — Information des personnes",
+      "questions": [
+        {
+          "code": "13.1",
+          "question": "Les mentions d'information (politiques de confidentialité) sont-elles complètes et accessibles ?",
+          "guidance": "Vérifier la présence : identité du responsable, finalités, base légale, durée, droits, DPO.",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique de confidentialité du site web", "Mentions légales", "Formulaires de collecte avec mentions"]
+        }
+      ]
+    },
+    {
+      "code": "ART30",
+      "title": "Art. 30 — Registre des traitements",
+      "questions": [
+        {
+          "code": "30.1",
+          "question": "Un registre des activités de traitement est-il tenu à jour ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Registre des traitements (format CNIL ou équivalent)", "Date de dernière mise à jour"]
+        },
+        {
+          "code": "30.2",
+          "question": "Les durées de conservation sont-elles définies pour chaque traitement ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Registre avec colonne durées de conservation", "Politique de conservation et d'archivage"]
+        }
+      ]
+    },
+    {
+      "code": "ART32",
+      "title": "Art. 32 — Sécurité des données",
+      "questions": [
+        {
+          "code": "32.1",
+          "question": "Des mesures techniques et organisationnelles appropriées sont-elles mises en place ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique de sécurité SI", "Chiffrement des données sensibles au repos et en transit"]
+        },
+        {
+          "code": "32.2",
+          "question": "Des AIPD (analyses d'impact) ont-elles été réalisées pour les traitements à risque élevé ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Rapports AIPD", "Registre des traitements nécessitant une AIPD"]
+        }
+      ]
+    },
+    {
+      "code": "ART33",
+      "title": "Art. 33-34 — Violations de données",
+      "questions": [
+        {
+          "code": "33.1",
+          "question": "Une procédure de notification des violations de données est-elle en place ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de gestion des incidents RGPD", "Registre des violations", "Modèle de notification CNIL"]
+        }
+      ]
+    },
+    {
+      "code": "DROITS",
+      "title": "Art. 15-22 — Droits des personnes",
+      "questions": [
+        {
+          "code": "D.1",
+          "question": "Un processus de traitement des demandes d'exercice des droits est-il opérationnel ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Procédure de gestion des droits (accès, rectification, suppression...)", "Exemples de demandes traitées (anonymisés)"]
+        },
+        {
+          "code": "D.2",
+          "question": "Les délais de réponse aux demandes (1 mois) sont-ils respectés ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Journal des demandes avec dates", "SLA défini"]
+        }
+      ]
+    }
+  ]
+}

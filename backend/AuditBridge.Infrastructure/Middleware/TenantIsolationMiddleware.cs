@@ -48,13 +48,28 @@ public class TenantIsolationMiddleware(RequestDelegate next, ILogger<TenantIsola
             return;
         }
 
-        // Inject org_id into PostgreSQL session for RLS policies
+        // Inject org_id into HttpContext for controllers, and resolve current user
         try
         {
-            var unitOfWork = context.RequestServices.GetRequiredService<IUnitOfWork>();
-            // Execute SET LOCAL for per-request isolation
-            // This is handled by the DbContext interceptor registered in startup
             context.Items["CurrentOrgId"] = orgId;
+
+            // Resolve current user ID — dev bypass injects "user_db_id" claim directly
+            var userDbIdClaim = context.User.Claims.FirstOrDefault(c => c.Type == "user_db_id");
+            if (userDbIdClaim is not null && Guid.TryParse(userDbIdClaim.Value, out var userDbId))
+            {
+                context.Items["CurrentUserId"] = userDbId;
+            }
+            else
+            {
+                var sub = context.User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+                if (sub is not null)
+                {
+                    var unitOfWork = context.RequestServices.GetRequiredService<IUnitOfWork>();
+                    var user = await unitOfWork.Users.GetByClerkIdAsync(sub);
+                    if (user is not null)
+                        context.Items["CurrentUserId"] = user.Id;
+                }
+            }
         }
         catch (Exception ex)
         {

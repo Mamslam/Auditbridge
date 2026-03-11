@@ -1,51 +1,52 @@
 namespace AuditBridge.Domain.Entities;
 
 /// <summary>
-/// Immutable audit trail entry. Must never be modified or deleted.
-/// Protected at the DB level by a PostgreSQL trigger.
+/// Immutable audit trail entry. Protected at DB level by trigger.
 /// </summary>
 public class AuditTrail
 {
-    public Guid Id { get; private set; }
-    public Guid? UserId { get; private set; }
-    public Guid? OrganizationId { get; private set; }
+    public long Id { get; private set; }        // BIGSERIAL
+    public Guid TenantId { get; private set; }
+    public Guid? ActorId { get; private set; }
+    public string? ActorType { get; private set; }  // 'auditor' | 'client' | 'system' | 'ai'
     public string Action { get; private set; } = string.Empty;
-    public string ResourceType { get; private set; } = string.Empty;
-    public Guid? ResourceId { get; private set; }
-    public Guid? CampaignId { get; private set; }
+    public string EntityType { get; private set; } = string.Empty;
+    public Guid EntityId { get; private set; }
+    public string? OldValues { get; private set; }  // JSON
+    public string? NewValues { get; private set; }  // JSON
     public string? IpAddress { get; private set; }
     public string? UserAgent { get; private set; }
-    public string? MetadataJson { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
     private AuditTrail() { }
 
     public static AuditTrail Create(
+        Guid tenantId,
         string action,
-        string resourceType,
-        Guid? userId = null,
-        Guid? organizationId = null,
-        Guid? resourceId = null,
-        Guid? campaignId = null,
+        string entityType,
+        Guid entityId,
+        Guid? actorId = null,
+        string actorType = "system",
+        string? oldValues = null,
+        string? newValues = null,
         string? ipAddress = null,
-        string? userAgent = null,
-        string? metadataJson = null)
+        string? userAgent = null)
     {
         if (string.IsNullOrWhiteSpace(action))
             throw new ArgumentException("Action is required.", nameof(action));
 
-        return new AuditTrail
+        return new()
         {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            OrganizationId = organizationId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            ActorType = actorType,
             Action = action,
-            ResourceType = resourceType,
-            ResourceId = resourceId,
-            CampaignId = campaignId,
+            EntityType = entityType,
+            EntityId = entityId,
+            OldValues = oldValues,
+            NewValues = newValues,
             IpAddress = ipAddress,
             UserAgent = userAgent,
-            MetadataJson = metadataJson,
             CreatedAt = DateTimeOffset.UtcNow,
         };
     }

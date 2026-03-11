@@ -3,6 +3,8 @@ using AuditBridge.Application.UseCases.Users;
 using AuditBridge.Domain.Interfaces;
 using AuditBridge.Infrastructure.Middleware;
 using AuditBridge.Infrastructure.Persistence;
+using AuditBridge.Infrastructure.Seeds;
+using AuditBridge.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,13 +17,9 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // HTTP Context Accessor for RLS interceptor
         services.AddHttpContextAccessor();
-
-        // EF Core interceptor for RLS
         services.AddSingleton<RlsDbConnectionInterceptor>();
 
-        // PostgreSQL via Supabase
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -35,13 +33,14 @@ public static class DependencyInjection
             options.AddInterceptors(sp.GetRequiredService<RlsDbConnectionInterceptor>());
         });
 
-        // Unit of Work & Repositories
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Application Use Cases
         services.AddScoped<CreateOrganizationUseCase>();
         services.AddScoped<GetOrganizationUseCase>();
         services.AddScoped<SyncClerkUserUseCase>();
+
+        services.AddScoped<ReferentialSeeder>();
+        services.AddScoped<AiAnalysisService>();
 
         return services;
     }

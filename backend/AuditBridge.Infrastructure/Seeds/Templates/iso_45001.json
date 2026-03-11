@@ -1,0 +1,92 @@
+{
+  "referential_code": "ISO_45001",
+  "sections": [
+    {
+      "code": "CH_4",
+      "title": "Contexte et leadership SST",
+      "questions": [
+        {
+          "code": "4.2",
+          "question": "Les travailleurs et leurs représentants sont-ils consultés et participent-ils au SMS SST ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Compte rendu CSSCT ou équivalent", "Procédure de consultation"]
+        },
+        {
+          "code": "5.2",
+          "question": "La politique SST est-elle documentée, communiquée et adaptée aux risques de l'organisme ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique SST affichée ou diffusée"]
+        }
+      ]
+    },
+    {
+      "code": "CH_6",
+      "title": "Identification des dangers et évaluation des risques",
+      "questions": [
+        {
+          "code": "6.1.1",
+          "question": "Un processus formalisé d'identification des dangers est-il en place et maintenu à jour ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Document unique d'évaluation des risques (DUER)", "Procédure d'identification"]
+        },
+        {
+          "code": "6.1.2",
+          "question": "Les risques SST sont-ils évalués et hiérarchisés avec des actions de réduction planifiées ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["DUER avec cotation et plan d'actions"]
+        },
+        {
+          "code": "6.1.3",
+          "question": "Les obligations légales SST applicables sont-elles identifiées et respectées ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Registre de conformité légale SST", "Veille réglementaire"]
+        }
+      ]
+    },
+    {
+      "code": "CH_8",
+      "title": "Maîtrise opérationnelle et situations d'urgence",
+      "questions": [
+        {
+          "code": "8.1",
+          "question": "Des mesures de prévention et de protection sont-elles mises en œuvre selon la hiérarchie des mesures ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Plan de prévention", "EPI fournis et utilisés"]
+        },
+        {
+          "code": "8.2",
+          "question": "L'organisme est-il préparé aux situations d'urgence SST (incendie, accident grave) ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan d'évacuation", "Exercices d'urgence réalisés"]
+        }
+      ]
+    },
+    {
+      "code": "CH_9",
+      "title": "Performance et incidents",
+      "questions": [
+        {
+          "code": "9.1",
+          "question": "Les accidents, incidents et presqu'accidents sont-ils enregistrés, analysés et font-ils l'objet d'actions correctives ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Registre des accidents", "Analyses des causes (arbre des causes)"]
+        },
+        {
+          "code": "9.2",
+          "question": "Les indicateurs SST (fréquence, gravité) sont-ils suivis et communiqués à la direction ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Tableau de bord SST", "Rapport annuel SST"]
+        }
+      ]
+    }
+  ]
+}

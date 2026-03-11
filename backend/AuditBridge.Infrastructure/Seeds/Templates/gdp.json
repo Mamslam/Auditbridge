@@ -1,0 +1,72 @@
+{
+  "referential_code": "GDP",
+  "sections": [
+    {
+      "code": "GESTION_QUALITE",
+      "title": "Gestion de la qualité et documentation",
+      "questions": [
+        {
+          "code": "GDP.1",
+          "question": "Un système de gestion de la qualité documenté est-il en place et révisé régulièrement ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Manuel qualité GDP", "Procédures opératoires normalisées (PON)"]
+        },
+        {
+          "code": "GDP.2",
+          "question": "Un responsable qualité (QP ou équivalent) est-il désigné avec les responsabilités GDP documentées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Organigramme", "Fiche de responsabilités QP"]
+        }
+      ]
+    },
+    {
+      "code": "STOCKAGE_TRANSPORT",
+      "title": "Stockage et transport",
+      "questions": [
+        {
+          "code": "GDP.3",
+          "question": "Les conditions de stockage (température, humidité) sont-elles surveillées et enregistrées en continu ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Enregistrements de température", "Certificats d'étalonnage des sondes"]
+        },
+        {
+          "code": "GDP.4",
+          "question": "La chaîne du froid est-elle maintenue et documentée lors du transport des médicaments thermosensibles ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Enregistreurs de température transport", "Qualification transporteurs"]
+        },
+        {
+          "code": "GDP.5",
+          "question": "Les véhicules et équipements de transport sont-ils qualifiés et nettoyés selon des procédures définies ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Dossiers de qualification des véhicules", "Fiches de nettoyage"]
+        }
+      ]
+    },
+    {
+      "code": "TRACABILITE_RAPPELS",
+      "title": "Traçabilité et rappels de lots",
+      "questions": [
+        {
+          "code": "GDP.6",
+          "question": "La traçabilité complète des médicaments (réception → livraison) est-elle assurée par lot ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Système de traçabilité", "Exercices de traçabilité réalisés"]
+        },
+        {
+          "code": "GDP.7",
+          "question": "Une procédure de rappel de lots est-elle en place et testée annuellement ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de rappel", "Compte rendu de simulation de rappel"]
+        }
+      ]
+    }
+  ]
+}

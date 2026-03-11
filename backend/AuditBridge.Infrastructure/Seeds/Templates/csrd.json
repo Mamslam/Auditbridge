@@ -1,0 +1,79 @@
+{
+  "referential_code": "CSRD",
+  "sections": [
+    {
+      "code": "GOUVERNANCE_ESG",
+      "title": "Gouvernance et stratégie de durabilité",
+      "questions": [
+        {
+          "code": "CSRD.G1",
+          "question": "L'organisme a-t-il réalisé une analyse de double matérialité (impacts et risques/opportunités) ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Rapport d'analyse de double matérialité", "Méthodologie documentée"]
+        },
+        {
+          "code": "CSRD.G2",
+          "question": "Les enjeux ESG matériels sont-ils intégrés dans la stratégie et les décisions de gouvernance ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Plan stratégique intégrant les enjeux ESG", "PV de conseil d'administration"]
+        },
+        {
+          "code": "CSRD.G3",
+          "question": "Un responsable (CSRO, DRS ou équivalent) est-il désigné pour piloter la démarche CSRD ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Fiche de poste", "Organigramme direction"]
+        }
+      ]
+    },
+    {
+      "code": "ENVIRONNEMENT",
+      "title": "Informations environnementales (ESRS E)",
+      "questions": [
+        {
+          "code": "CSRD.E1",
+          "question": "Les émissions de GES (scopes 1, 2 et 3) sont-elles mesurées et vérifiées par un tiers ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Bilan carbone certifié", "Rapport de vérification tierce partie"]
+        },
+        {
+          "code": "CSRD.E2",
+          "question": "Des objectifs de réduction des émissions alignés sur la science (SBTi) sont-ils définis ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Objectifs SBTi validés ou en cours", "Trajectoire de décarbonation"]
+        }
+      ]
+    },
+    {
+      "code": "SOCIAL_GOUVERNANCE",
+      "title": "Informations sociales et de gouvernance (ESRS S & G)",
+      "questions": [
+        {
+          "code": "CSRD.S1",
+          "question": "Les données sociales clés (égalité salariale, diversité, turnover, accidents) sont-elles collectées et publiées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Index égalité F/H", "Données sociales auditées"]
+        },
+        {
+          "code": "CSRD.G4",
+          "question": "La politique anti-corruption et les mécanismes d'alerte éthique sont-ils opérationnels ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Code de conduite", "Système de lanceur d'alerte conforme Sapin II"]
+        },
+        {
+          "code": "CSRD.RAPPORT",
+          "question": "Le rapport de durabilité respecte-t-il les ESRS applicables et est-il intégré au rapport de gestion ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Rapport CSRD publié", "Table de correspondance ESRS"]
+        }
+      ]
+    }
+  ]
+}

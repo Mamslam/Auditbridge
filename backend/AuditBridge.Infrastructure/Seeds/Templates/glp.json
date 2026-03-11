@@ -1,0 +1,72 @@
+{
+  "referential_code": "GLP",
+  "sections": [
+    {
+      "code": "ORGANISATION",
+      "title": "Organisation et personnel",
+      "questions": [
+        {
+          "code": "GLP.1",
+          "question": "La direction du laboratoire a-t-elle désigné un Directeur d'Étude (DE) et un Responsable des Ressources de Test (RRT) pour chaque étude ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Lettre de désignation DE et RRT", "CV et formations des responsables"]
+        },
+        {
+          "code": "GLP.2",
+          "question": "Le programme de qualité assurance (QA) est-il opérationnel avec des audits d'études réalisés ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Programme d'audit QA", "Rapports d'inspection des études"]
+        }
+      ]
+    },
+    {
+      "code": "EQUIPEMENTS_REACTIFS",
+      "title": "Équipements, réactifs et substances d'essai",
+      "questions": [
+        {
+          "code": "GLP.3",
+          "question": "Les équipements analytiques sont-ils qualifiés, étalonnés et maintenus selon des programmes documentés ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Fiches de qualification IQ/OQ/PQ", "Calendrier d'étalonnage"]
+        },
+        {
+          "code": "GLP.4",
+          "question": "Les substances d'essai et les substances de référence sont-elles caractérisées et stockées selon les exigences GLP ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Certificats d'analyse", "Registre de réception et de stockage"]
+        }
+      ]
+    },
+    {
+      "code": "CONDUITE_ETUDES",
+      "title": "Conduite des études et archives",
+      "questions": [
+        {
+          "code": "GLP.5",
+          "question": "Chaque étude dispose-t-elle d'un plan d'étude approuvé avant le début des travaux expérimentaux ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plans d'étude signés par le DE", "Index des études en cours"]
+        },
+        {
+          "code": "GLP.6",
+          "question": "Les données brutes sont-elles enregistrées de façon lisible, indelébile et tracées en temps réel ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Cahiers de laboratoire", "Audit trail électronique (LIMS)"]
+        },
+        {
+          "code": "GLP.7",
+          "question": "Les archives sont-elles sécurisées, indexées et conservées selon les durées réglementaires (min. 10 ans après étude) ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Index des archives", "Contrôle d'accès à la salle d'archives"]
+        }
+      ]
+    }
+  ]
+}

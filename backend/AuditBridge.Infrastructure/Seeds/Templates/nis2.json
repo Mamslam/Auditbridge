@@ -1,0 +1,79 @@
+{
+  "referential_code": "NIS2",
+  "sections": [
+    {
+      "code": "ART_21",
+      "title": "Mesures de gestion des risques cybersécurité",
+      "questions": [
+        {
+          "code": "21.1",
+          "question": "L'entité a-t-elle mis en place une politique de sécurité des réseaux et systèmes d'information ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique SMSI approuvée", "Cartographie des actifs critiques"]
+        },
+        {
+          "code": "21.2",
+          "question": "Un processus formalisé de gestion des incidents de cybersécurité est-il opérationnel ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de gestion des incidents", "Journaux de détection (SIEM)"]
+        },
+        {
+          "code": "21.3",
+          "question": "La continuité des activités (PCA/PRA) couvrant les incidents cyber est-elle documentée et testée ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["PCA/PRA documenté", "Comptes rendus de tests/exercices"]
+        },
+        {
+          "code": "21.4",
+          "question": "La chaîne d'approvisionnement numérique (prestataires, logiciels tiers) fait-elle l'objet d'une évaluation des risques ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Registre fournisseurs critiques", "Clauses contractuelles cybersécurité"]
+        }
+      ]
+    },
+    {
+      "code": "ART_23",
+      "title": "Notification des incidents significatifs",
+      "questions": [
+        {
+          "code": "23.1",
+          "question": "L'entité dispose-t-elle d'un processus de qualification des incidents significatifs à notifier ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Critères de qualification des incidents NIS2", "Procédure de notification"]
+        },
+        {
+          "code": "23.2",
+          "question": "Les délais de notification (alerte 24h, rapport 72h, rapport final 1 mois) sont-ils respectés ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Historique des notifications ANSSI/CERT", "Registre des incidents déclarés"]
+        }
+      ]
+    },
+    {
+      "code": "GOUVERNANCE",
+      "title": "Gouvernance et responsabilité dirigeante",
+      "questions": [
+        {
+          "code": "G.1",
+          "question": "Les organes de direction ont-ils reçu une formation sur les risques cyber et valident-ils la politique SMSI ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Attestations de formation dirigeants", "PV d'approbation de la politique"]
+        },
+        {
+          "code": "G.2",
+          "question": "Un RSSI ou responsable cybersécurité est-il désigné avec des ressources suffisantes ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Fiche de poste RSSI", "Budget cybersécurité alloué"]
+        }
+      ]
+    }
+  ]
+}

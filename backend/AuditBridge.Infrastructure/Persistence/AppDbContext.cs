@@ -7,13 +7,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<AuditTemplate> AuditTemplates => Set<AuditTemplate>();
+    public DbSet<ReferentialCategory> ReferentialCategories => Set<ReferentialCategory>();
+    public DbSet<Referential> Referentials => Set<Referential>();
     public DbSet<TemplateSection> TemplateSections => Set<TemplateSection>();
     public DbSet<TemplateQuestion> TemplateQuestions => Set<TemplateQuestion>();
-    public DbSet<AuditCampaign> AuditCampaigns => Set<AuditCampaign>();
+    public DbSet<Audit> Audits => Set<Audit>();
     public DbSet<AuditResponse> AuditResponses => Set<AuditResponse>();
-    public DbSet<AuditDocument> AuditDocuments => Set<AuditDocument>();
-    public DbSet<CapaAction> CapaActions => Set<CapaAction>();
+    public DbSet<AuditCapa> AuditCapas => Set<AuditCapa>();
     public DbSet<AuditReport> AuditReports => Set<AuditReport>();
     public DbSet<AuditTrail> AuditTrails => Set<AuditTrail>();
 

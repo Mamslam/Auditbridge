@@ -26,7 +26,11 @@ public class CreateOrganizationUseCaseTests
         _unitOfWorkMock.Setup(u => u.Organizations).Returns(_orgRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.Users).Returns(_userRepoMock.Object);
         _unitOfWorkMock.Setup(u => u.AuditTrail).Returns(_auditTrailMock.Object);
+        _unitOfWorkMock.Setup(u => u.Referentials).Returns(new Mock<IReferentialRepository>().Object);
+        _unitOfWorkMock.Setup(u => u.Audits).Returns(new Mock<IAuditRepository>().Object);
         _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+        _unitOfWorkMock.Setup(u => u.SaveChangesWithTenantAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
         _orgRepoMock.Setup(r => r.AddAsync(It.IsAny<Organization>(), It.IsAny<CancellationToken>()))
@@ -135,7 +139,7 @@ public class CreateOrganizationUseCaseTests
         await _sut.ExecuteAsync(request);
 
         // Assert
-        _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWorkMock.Verify(u => u.SaveChangesWithTenantAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

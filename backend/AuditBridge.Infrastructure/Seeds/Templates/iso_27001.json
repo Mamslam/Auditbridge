@@ -1,0 +1,105 @@
+{
+  "referential_code": "ISO_27001",
+  "sections": [
+    {
+      "code": "A5",
+      "title": "A.5 — Politiques de sécurité de l'information",
+      "questions": [
+        {
+          "code": "A.5.1",
+          "question": "Une politique de sécurité de l'information est-elle documentée, approuvée et communiquée ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique de sécurité signée par la direction", "Preuve de diffusion aux collaborateurs"]
+        }
+      ]
+    },
+    {
+      "code": "A8",
+      "title": "A.8 — Gestion des actifs",
+      "questions": [
+        {
+          "code": "A.8.1",
+          "question": "Un inventaire des actifs informationnels est-il maintenu et tenu à jour ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Inventaire des actifs (CMDB ou équivalent)", "Responsables d'actifs identifiés"]
+        },
+        {
+          "code": "A.8.3",
+          "question": "Les supports amovibles sont-ils gérés selon une procédure formelle ?",
+          "answer_type": "yesno_na",
+          "criticality": "minor",
+          "expected_evidence": ["Politique d'utilisation des supports amovibles", "Registre si applicable"]
+        }
+      ]
+    },
+    {
+      "code": "A9",
+      "title": "A.9 — Contrôle d'accès",
+      "questions": [
+        {
+          "code": "A.9.1",
+          "question": "Une politique de contrôle d'accès est-elle définie et appliquée ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique de contrôle d'accès", "Matrice des droits"]
+        },
+        {
+          "code": "A.9.2",
+          "question": "Le cycle de vie des comptes utilisateurs (création, modification, suppression) est-il maîtrisé ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de gestion des comptes", "Exemples de formulaires ou tickets de création/suppression"]
+        },
+        {
+          "code": "A.9.4",
+          "question": "L'authentification forte (MFA) est-elle mise en place pour les accès sensibles ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Configuration MFA sur les systèmes critiques", "Politique de mots de passe"]
+        }
+      ]
+    },
+    {
+      "code": "A12",
+      "title": "A.12 — Sécurité liée à l'exploitation",
+      "questions": [
+        {
+          "code": "A.12.1",
+          "question": "Les procédures d'exploitation sont-elles documentées et disponibles ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Runbooks ou procédures d'exploitation"]
+        },
+        {
+          "code": "A.12.3",
+          "question": "Des sauvegardes régulières sont-elles effectuées et testées ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique de sauvegarde", "Logs de sauvegardes réussies", "PV de test de restauration"]
+        },
+        {
+          "code": "A.12.4",
+          "question": "Les journaux d'événements sont-ils collectés, protégés et analysés ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Configuration du SIEM ou solution de logs", "Politique de rétention", "Exemples d'alertes traitées"]
+        }
+      ]
+    },
+    {
+      "code": "A16",
+      "title": "A.16 — Gestion des incidents",
+      "questions": [
+        {
+          "code": "A.16.1",
+          "question": "Une procédure de gestion des incidents de sécurité est-elle en place et testée ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Plan de réponse aux incidents", "Registre des incidents passés", "Exercice de simulation documenté"]
+        }
+      ]
+    }
+  ]
+}

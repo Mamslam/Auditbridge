@@ -1,0 +1,72 @@
+{
+  "referential_code": "DORA",
+  "sections": [
+    {
+      "code": "GESTION_RISQUES_TIC",
+      "title": "Gestion des risques liés aux TIC",
+      "questions": [
+        {
+          "code": "DR.1",
+          "question": "Le cadre de gestion des risques TIC est-il approuvé par l'organe de direction et révisé annuellement ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique gestion risques TIC", "PV d'approbation direction"]
+        },
+        {
+          "code": "DR.2",
+          "question": "La cartographie des actifs TIC critiques et leurs interdépendances est-elle maintenue à jour ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Inventaire des actifs TIC", "Cartographie des dépendances"]
+        },
+        {
+          "code": "DR.3",
+          "question": "Des tests de pénétration TLPT (Threat-Led Penetration Testing) sont-ils réalisés selon la fréquence réglementaire ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Rapports TLPT", "Lettre d'engagement prestataire certifié"]
+        }
+      ]
+    },
+    {
+      "code": "GESTION_INCIDENTS",
+      "title": "Gestion des incidents TIC et notification",
+      "questions": [
+        {
+          "code": "DR.4",
+          "question": "Les incidents TIC majeurs sont-ils classifiés selon les critères DORA et notifiés aux autorités compétentes ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Registre des incidents TIC", "Preuves de notifications réglementaires"]
+        },
+        {
+          "code": "DR.5",
+          "question": "Un plan de continuité des activités spécifique aux TIC (BCP/DRP) est-il testé au moins annuellement ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["BCP/DRP documenté", "Comptes rendus de tests"]
+        }
+      ]
+    },
+    {
+      "code": "TIERS_TIC",
+      "title": "Gestion des risques liés aux tiers TIC",
+      "questions": [
+        {
+          "code": "DR.6",
+          "question": "Les contrats avec les prestataires TIC critiques incluent-ils les clauses DORA obligatoires ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Contrats avec clauses d'audit, SLA, exit plan"]
+        },
+        {
+          "code": "DR.7",
+          "question": "Un registre des prestataires TIC critiques est-il maintenu et communiqué aux autorités si requis ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Registre prestataires TIC critiques", "Évaluations de concentration"]
+        }
+      ]
+    }
+  ]
+}

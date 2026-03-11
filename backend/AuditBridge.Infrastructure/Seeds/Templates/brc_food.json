@@ -1,0 +1,72 @@
+{
+  "referential_code": "BRC_FOOD",
+  "sections": [
+    {
+      "code": "ENGAGEMENT_DIRECTION",
+      "title": "Engagement de la direction et amélioration continue",
+      "questions": [
+        {
+          "code": "BRC.1.1",
+          "question": "La direction a-t-elle démontré son engagement par une revue annuelle du système BRCGS et la définition d'objectifs d'amélioration ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Compte rendu de revue de direction", "Plan d'amélioration annuel"]
+        },
+        {
+          "code": "BRC.1.2",
+          "question": "La culture food safety est-elle évaluée et promue activement dans l'organisation ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Évaluation de la culture food safety", "Actions de sensibilisation"]
+        }
+      ]
+    },
+    {
+      "code": "HACCP_PLAN",
+      "title": "Plan de sécurité alimentaire (HACCP)",
+      "questions": [
+        {
+          "code": "BRC.2.1",
+          "question": "Le plan HACCP a-t-il été entièrement mis en œuvre et est-il maintenu à jour ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan HACCP complet", "Preuves de mise en œuvre et de révision"]
+        },
+        {
+          "code": "BRC.2.2",
+          "question": "Les CCP font-ils l'objet d'une surveillance, d'enregistrements et d'actions correctives documentées ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Enregistrements de surveillance CCP", "Fiches d'actions correctives"]
+        }
+      ]
+    },
+    {
+      "code": "SITE_SECURITE",
+      "title": "Sécurité du site et hygiène",
+      "questions": [
+        {
+          "code": "BRC.4.1",
+          "question": "Les exigences d'hygiène personnelle (tenues, lavage des mains, bijoux) sont-elles respectées et contrôlées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Procédure d'hygiène personnelle", "Registres des contrôles hygiène"]
+        },
+        {
+          "code": "BRC.4.2",
+          "question": "Un programme de lutte contre les nuisibles (IPM) est-il en place avec un prestataire qualifié ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Contrat prestataire IPM", "Rapports de passage et cartographie appâts"]
+        },
+        {
+          "code": "BRC.4.3",
+          "question": "La maîtrise des corps étrangers (détection métaux, rayons X) est-elle opérationnelle avec tests documentés ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure détecteur de métaux/rayons X", "Registres de tests journaliers"]
+        }
+      ]
+    }
+  ]
+}

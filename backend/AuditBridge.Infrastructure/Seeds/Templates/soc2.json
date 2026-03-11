@@ -1,0 +1,79 @@
+{
+  "referential_code": "SOC2",
+  "sections": [
+    {
+      "code": "CC_SECURITY",
+      "title": "Contrôles communs — Sécurité (CC)",
+      "questions": [
+        {
+          "code": "CC1",
+          "question": "L'environnement de contrôle est-il soutenu par des politiques de sécurité approuvées et communiquées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique de sécurité de l'information", "Attestations de sensibilisation"]
+        },
+        {
+          "code": "CC2",
+          "question": "Les accès logiques aux systèmes et données sont-ils gérés selon le principe du moindre privilège ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Matrice des droits d'accès", "Revues d'accès périodiques"]
+        },
+        {
+          "code": "CC3",
+          "question": "Les changements en production sont-ils soumis à un processus de gestion des changements approuvé ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Procédure Change Management", "Tickets de changement avec approbations"]
+        },
+        {
+          "code": "CC4",
+          "question": "Des activités de surveillance continue (monitoring, alerting) sont-elles en place pour détecter les anomalies ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["SIEM/logs centralisés", "Alertes configurées et testées"]
+        }
+      ]
+    },
+    {
+      "code": "AVAILABILITY",
+      "title": "Disponibilité",
+      "questions": [
+        {
+          "code": "A1",
+          "question": "Les SLA de disponibilité sont-ils définis, mesurés et respectés (ex. 99,9%) ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Rapport de disponibilité", "Tableau de bord uptime"]
+        },
+        {
+          "code": "A2",
+          "question": "Le plan de reprise d'activité (PRA) est-il testé au moins annuellement ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Rapport de test PRA", "RTO/RPO mesurés et conformes"]
+        }
+      ]
+    },
+    {
+      "code": "CONFIDENTIALITY",
+      "title": "Confidentialité et intégrité du traitement",
+      "questions": [
+        {
+          "code": "C1",
+          "question": "Les données confidentielles sont-elles chiffrées en transit et au repos ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Configuration TLS", "Politique de chiffrement des données"]
+        },
+        {
+          "code": "PI1",
+          "question": "Les traitements système produisent-ils des données complètes, exactes et valides selon les spécifications ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Résultats des tests de validation", "Contrôles d'intégrité automatisés"]
+        }
+      ]
+    }
+  ]
+}

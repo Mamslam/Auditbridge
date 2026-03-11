@@ -15,11 +15,13 @@ public class Organization
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
-    // Navigation — mutable list required by EF Core, exposed as read-only
+    // Navigation
     private readonly List<User> _users = [];
-    private readonly List<AuditTemplate> _templates = [];
+    private readonly List<Referential> _referentials = [];
+    private readonly List<Audit> _audits = [];
     public IReadOnlyCollection<User> Users => _users.AsReadOnly();
-    public IReadOnlyCollection<AuditTemplate> Templates => _templates.AsReadOnly();
+    public IReadOnlyCollection<Referential> Referentials => _referentials.AsReadOnly();
+    public IReadOnlyCollection<Audit> Audits => _audits.AsReadOnly();
 
     private Organization() { }
 

@@ -14,8 +14,14 @@ public class CreateOrganizationUseCase(IUnitOfWork unitOfWork)
         // Validate input
         if (string.IsNullOrWhiteSpace(request.Name))
             throw new ValidationException(nameof(request.Name), "Organization name is required.");
-        if (string.IsNullOrWhiteSpace(request.OwnerClerkId))
-            throw new ValidationException(nameof(request.OwnerClerkId), "Owner Clerk ID is required.");
+
+        // Dev fallback when no Clerk session present
+        var ownerClerkId = string.IsNullOrWhiteSpace(request.OwnerClerkId)
+            ? $"dev_{Guid.NewGuid():N}"
+            : request.OwnerClerkId;
+        var ownerEmail = string.IsNullOrWhiteSpace(request.OwnerEmail)
+            ? $"{ownerClerkId}@dev.local"
+            : request.OwnerEmail;
 
         // Create organization
         var org = Organization.Create(
@@ -32,22 +38,22 @@ public class CreateOrganizationUseCase(IUnitOfWork unitOfWork)
             : UserRole.ClientAdmin;
 
         var owner = User.Create(
-            request.OwnerClerkId,
+            ownerClerkId,
             org.Id,
-            request.OwnerEmail,
+            ownerEmail,
             ownerRole,
             request.OwnerFullName);
 
         await unitOfWork.Users.AddAsync(owner, ct);
 
-        // Log creation in audit trail
         await unitOfWork.AuditTrail.LogAsync(
             AuditTrail.Create(
+                tenantId: org.Id,
                 action: "organization.created",
-                resourceType: "organization",
-                userId: owner.Id,
-                organizationId: org.Id,
-                resourceId: org.Id),
+                entityType: "organization",
+                entityId: org.Id,
+                actorId: owner.Id,
+                actorType: "system"),
             ct);
 
         await unitOfWork.SaveChangesWithTenantAsync(org.Id, ct);

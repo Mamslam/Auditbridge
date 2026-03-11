@@ -5,12 +5,11 @@ public interface IUnitOfWork
     IOrganizationRepository Organizations { get; }
     IUserRepository Users { get; }
     IAuditTrailRepository AuditTrail { get; }
+    IReferentialRepository Referentials { get; }
+    IAuditRepository Audits { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 
-    /// <summary>
-    /// Saves all changes within an explicit transaction that sets app.current_org_id,
-    /// required for onboarding flows where the HTTP context has no org yet.
-    /// </summary>
+    /// <summary>Saves within a transaction that sets app.current_org_id for RLS.</summary>
     Task<int> SaveChangesWithTenantAsync(Guid orgId, CancellationToken ct = default);
 }

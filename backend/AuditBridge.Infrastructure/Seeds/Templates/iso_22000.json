@@ -1,0 +1,72 @@
+{
+  "referential_code": "ISO_22000",
+  "sections": [
+    {
+      "code": "CH_5",
+      "title": "Leadership et politique de sécurité des aliments",
+      "questions": [
+        {
+          "code": "5.2",
+          "question": "La politique de sécurité des aliments est-elle documentée, communiquée et comprise par le personnel ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique sécurité alimentaire signée", "Preuves de communication"]
+        },
+        {
+          "code": "5.3",
+          "question": "Une équipe de sécurité des aliments pluridisciplinaire est-elle constituée avec un responsable désigné ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Composition de l'équipe HACCP/sécurité", "Fiche de poste responsable"]
+        }
+      ]
+    },
+    {
+      "code": "CH_8_HACCP",
+      "title": "Analyse des dangers et mesures de maîtrise (HACCP)",
+      "questions": [
+        {
+          "code": "8.5.2",
+          "question": "Tous les dangers significatifs pour la sécurité des aliments ont-ils été identifiés et évalués ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Analyse des dangers documentée", "Matrice de criticité des dangers"]
+        },
+        {
+          "code": "8.5.4",
+          "question": "Les CCP (Points Critiques de Contrôle) et PRPo sont-ils définis avec des limites critiques et des actions correctives ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan HACCP", "Fiches de surveillance des CCP"]
+        },
+        {
+          "code": "8.9",
+          "question": "Les non-conformités (produits potentiellement dangereux) sont-elles gérées selon une procédure définie ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de gestion des non-conformités", "Registre des retraits/rappels"]
+        }
+      ]
+    },
+    {
+      "code": "CH_9",
+      "title": "Évaluation des performances et amélioration",
+      "questions": [
+        {
+          "code": "9.1",
+          "question": "La validation des mesures de maîtrise et la vérification du système HACCP sont-elles réalisées périodiquement ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Rapports de validation", "Comptes rendus de vérification"]
+        },
+        {
+          "code": "9.2",
+          "question": "Des audits internes du système de management de la sécurité alimentaire sont-ils planifiés et réalisés ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Programme d'audit", "Rapports d'audit interne"]
+        }
+      ]
+    }
+  ]
+}

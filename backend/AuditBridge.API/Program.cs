@@ -1,8 +1,13 @@
+using AuditBridge.Domain.Entities;
 using AuditBridge.Infrastructure;
 using AuditBridge.Infrastructure.Middleware;
+using AuditBridge.Infrastructure.Persistence;
+using AuditBridge.Infrastructure.Seeds;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -101,6 +106,45 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+// ── DB Migration + Seed ───────────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<ReferentialSeeder>();
+    await seeder.SeedAsync();
+}
+
+// ── Dev Auth Bypass ───────────────────────────────────────────────────────
+// Without a real Clerk setup in dev, inject a fake identity so [Authorize]
+// passes and TenantIsolationMiddleware can find an org context.
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        if (!context.Request.Headers.ContainsKey("Authorization"))
+        {
+            await using var scope = context.RequestServices.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var firstOrg = await db.Set<Organization>().FirstOrDefaultAsync();
+            if (firstOrg is not null)
+            {
+                var firstUser = await db.Set<User>().FirstOrDefaultAsync(u => u.OrganizationId == firstOrg.Id);
+                var devClaims = new List<Claim>
+                {
+                    new Claim("sub", firstUser?.ClerkId ?? "dev_user"),
+                    new Claim("org_id", firstOrg.Id.ToString()),
+                };
+                if (firstUser is not null)
+                    devClaims.Add(new Claim("user_db_id", firstUser.Id.ToString()));
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(devClaims, "DevBypass"));
+            }
+        }
+        await next();
+    });
+}
+
 // ── Middleware Pipeline ───────────────────────────────────────────────────
 app.UseSerilogRequestLogging();
 
@@ -124,7 +168,9 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

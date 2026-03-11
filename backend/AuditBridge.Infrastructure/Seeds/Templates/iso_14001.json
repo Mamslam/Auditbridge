@@ -1,0 +1,99 @@
+{
+  "referential_code": "ISO_14001",
+  "sections": [
+    {
+      "code": "CH_4",
+      "title": "Contexte et leadership",
+      "questions": [
+        {
+          "code": "4.1",
+          "question": "L'organisme a-t-il identifié les enjeux internes et externes pertinents pour son SME ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Analyse de contexte documentée", "Revue de direction"]
+        },
+        {
+          "code": "4.2",
+          "question": "Les parties intéressées et leurs exigences environnementales ont-elles été déterminées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Registre des parties intéressées"]
+        },
+        {
+          "code": "5.1",
+          "question": "La direction démontre-t-elle un leadership visible sur la politique environnementale ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique environnementale signée", "Comptes rendus de revue de direction"]
+        }
+      ]
+    },
+    {
+      "code": "CH_6",
+      "title": "Planification environnementale",
+      "questions": [
+        {
+          "code": "6.1.1",
+          "question": "Les aspects environnementaux significatifs ont-ils été identifiés et évalués ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Registre des aspects environnementaux", "Matrice de criticité"]
+        },
+        {
+          "code": "6.1.2",
+          "question": "Les obligations de conformité légale et réglementaire sont-elles inventoriées et tenues à jour ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Veille réglementaire", "Registre de conformité"]
+        },
+        {
+          "code": "6.2",
+          "question": "Des objectifs environnementaux mesurables ont-ils été fixés et font-ils l'objet d'un suivi ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Tableau de bord environnemental", "Plan d'actions objectifs"]
+        }
+      ]
+    },
+    {
+      "code": "CH_8",
+      "title": "Maîtrise opérationnelle",
+      "questions": [
+        {
+          "code": "8.1",
+          "question": "Les opérations à impact environnemental significatif sont-elles maîtrisées (procédures, consignes) ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Procédures opérationnelles", "Fiches de poste environnementales"]
+        },
+        {
+          "code": "8.2",
+          "question": "Un plan de préparation aux situations d'urgence environnementale est-il en place et testé ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan d'urgence environnemental", "Compte rendu d'exercice"]
+        }
+      ]
+    },
+    {
+      "code": "CH_9",
+      "title": "Évaluation des performances",
+      "questions": [
+        {
+          "code": "9.1",
+          "question": "Les indicateurs environnementaux clés sont-ils suivis et analysés régulièrement ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Rapport de performance environnementale", "Tableaux de bord"]
+        },
+        {
+          "code": "9.2",
+          "question": "Des audits internes du SME sont-ils réalisés selon un programme planifié ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Programme d'audit interne", "Rapports d'audit"]
+        }
+      ]
+    }
+  ]
+}

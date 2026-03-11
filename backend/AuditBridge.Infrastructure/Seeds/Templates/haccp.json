@@ -1,0 +1,106 @@
+{
+  "referential_code": "HACCP",
+  "sections": [
+    {
+      "code": "ETAPE1",
+      "title": "Étapes 1-2 — Équipe et description du produit",
+      "questions": [
+        {
+          "code": "H.1.1",
+          "question": "Une équipe HACCP pluridisciplinaire est-elle constituée avec les compétences requises ?",
+          "answer_type": "yesno",
+          "criticality": "major",
+          "expected_evidence": ["Liste des membres de l'équipe HACCP", "Organigramme", "Formations HACCP des membres"]
+        },
+        {
+          "code": "H.1.2",
+          "question": "Les produits finis sont-ils décrits (composition, caractéristiques, conditions de stockage) ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Fiches produits avec caractéristiques physicochimiques", "Conditions de conservation"]
+        }
+      ]
+    },
+    {
+      "code": "ETAPE3",
+      "title": "Étapes 3-4 — Utilisation prévue et diagramme de flux",
+      "questions": [
+        {
+          "code": "H.3.1",
+          "question": "L'utilisation prévue du produit et les populations cibles sont-elles définies ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Fiche produit avec usage prévu", "Identification des populations vulnérables si applicable"]
+        },
+        {
+          "code": "H.4.1",
+          "question": "Un diagramme de flux de production a-t-il été établi et vérifié sur site ?",
+          "answer_type": "yesno",
+          "criticality": "critical",
+          "expected_evidence": ["Diagramme de flux signé et daté", "PV de vérification sur site"]
+        }
+      ]
+    },
+    {
+      "code": "ETAPE6",
+      "title": "Étape 6 — Analyse des dangers",
+      "questions": [
+        {
+          "code": "H.6.1",
+          "question": "Tous les dangers biologiques, chimiques et physiques ont-ils été identifiés et évalués ?",
+          "answer_type": "yesno",
+          "criticality": "critical",
+          "expected_evidence": ["Tableau d'analyse des dangers", "Sources bibliographiques ou réglementaires utilisées"]
+        },
+        {
+          "code": "H.6.2",
+          "question": "Des mesures de maîtrise sont-elles définies pour chaque danger significatif ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Tableau danger/mesure de maîtrise", "Procédures ou paramètres de contrôle"]
+        }
+      ]
+    },
+    {
+      "code": "ETAPE7",
+      "title": "Étapes 7-12 — Points Critiques de Contrôle",
+      "questions": [
+        {
+          "code": "H.7.1",
+          "question": "Les CCP ont-ils été déterminés à l'aide d'un arbre de décision ou méthode équivalente ?",
+          "answer_type": "yesno",
+          "criticality": "critical",
+          "expected_evidence": ["Arbre de décision rempli", "Liste des CCP avec justification"]
+        },
+        {
+          "code": "H.8.1",
+          "question": "Des limites critiques validées sont-elles définies pour chaque CCP ?",
+          "answer_type": "yesno",
+          "criticality": "critical",
+          "expected_evidence": ["Limites critiques documentées avec références scientifiques ou réglementaires"]
+        },
+        {
+          "code": "H.9.1",
+          "question": "Un système de surveillance des CCP est-il en place avec enregistrements ?",
+          "answer_type": "yesno",
+          "criticality": "critical",
+          "expected_evidence": ["Fréquence et méthode de surveillance documentées", "Enregistrements de surveillance récents", "Formation des opérateurs"]
+        },
+        {
+          "code": "H.10.1",
+          "question": "Des mesures correctives sont-elles définies et appliquées en cas de dépassement des limites critiques ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure d'actions correctives par CCP", "Exemples d'actions correctives appliquées"]
+        },
+        {
+          "code": "H.11.1",
+          "question": "Le plan HACCP fait-il l'objet d'une vérification régulière (min. annuelle) ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Planning de vérification", "Rapport de vérification annuel", "PV de revue du plan HACCP"]
+        }
+      ]
+    }
+  ]
+}

@@ -12,20 +12,27 @@ class ApiError extends Error {
   }
 }
 
+async function getClerkToken(): Promise<string | null> {
+  // Client-side: use Clerk's global session object
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clerk = (window as any).Clerk;
+    if (clerk?.session) {
+      try {
+        return await clerk.session.getToken();
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
 async function fetchWithAuth<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const { getToken } = await import("@clerk/nextjs/server").catch(
-    () => ({ getToken: async () => null }),
-  );
-
-  let token: string | null = null;
-  try {
-    token = await getToken();
-  } catch {
-    // client-side: token managed by Clerk header interceptor
-  }
+  const token = await getClerkToken();
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",

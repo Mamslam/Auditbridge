@@ -29,11 +29,12 @@ public class SyncClerkUserUseCase(IUnitOfWork unitOfWork)
                 {
                     await unitOfWork.AuditTrail.LogAsync(
                         AuditTrail.Create(
+                            tenantId: existingUser.OrganizationId,
                             action: "user.deleted",
-                            resourceType: "user",
-                            userId: existingUser.Id,
-                            organizationId: existingUser.OrganizationId,
-                            resourceId: existingUser.Id),
+                            entityType: "user",
+                            entityId: existingUser.Id,
+                            actorId: existingUser.Id,
+                            actorType: "system"),
                         ct);
                 }
                 break;

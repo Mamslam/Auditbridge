@@ -1,0 +1,109 @@
+{
+  "referential_code": "EU_GMP",
+  "sections": [
+    {
+      "code": "CH_4",
+      "title": "Chapitre 4 — Documentation",
+      "questions": [
+        {
+          "code": "4.1",
+          "question": "Le système documentaire GMP est-il formalisé et approuvé par la direction ?",
+          "guidance": "Vérifier l'existence d'une SOP maîtresse, la liste des documents en vigueur, et les signatures d'approbation.",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "is_mandatory": true,
+          "expected_evidence": ["SOP maîtresse signée", "Liste des documents en vigueur", "PV de revue documentaire"]
+        },
+        {
+          "code": "4.2",
+          "question": "Les SOPs sont-elles revues à intervalles réguliers (max 3 ans) ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Calendrier de revue", "SOPs avec dates de révision visibles"]
+        },
+        {
+          "code": "4.3",
+          "question": "Les enregistrements sont-ils conservés pendant la durée réglementaire applicable ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Politique de rétention des données", "Registre des destructions"]
+        }
+      ]
+    },
+    {
+      "code": "CH_5",
+      "title": "Chapitre 5 — Production",
+      "questions": [
+        {
+          "code": "5.1",
+          "question": "Les locaux de production sont-ils qualifiés et entretenus selon les exigences GMP ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Rapport de qualification IQ/OQ/PQ", "Registre de maintenance préventive"]
+        },
+        {
+          "code": "5.2",
+          "question": "Les matières premières font-elles l'objet d'un contrôle à réception conforme aux spécifications ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de réception", "Bulletins d'analyse fournisseurs", "COA internes"]
+        },
+        {
+          "code": "5.3",
+          "question": "Les déviations de production sont-elles détectées, documentées et investigées ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Système de gestion des déviations", "Exemples de déviations clôturées"]
+        }
+      ]
+    },
+    {
+      "code": "CH_6",
+      "title": "Chapitre 6 — Contrôle qualité",
+      "questions": [
+        {
+          "code": "6.1",
+          "question": "Le laboratoire de contrôle qualité est-il indépendant de la production ?",
+          "answer_type": "yesno",
+          "criticality": "major",
+          "expected_evidence": ["Organigramme", "Description de poste responsable QC"]
+        },
+        {
+          "code": "6.2",
+          "question": "Les méthodes analytiques sont-elles validées ou vérifiées selon les normes en vigueur ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Rapports de validation des méthodes", "Référence aux pharmacopées applicables"]
+        }
+      ]
+    },
+    {
+      "code": "ANN11",
+      "title": "Annexe 11 — Systèmes informatisés",
+      "questions": [
+        {
+          "code": "A11.1",
+          "question": "Les systèmes informatisés critiques sont-ils validés (CSV) ?",
+          "guidance": "Inclut ERP, LIMS, MES, systèmes de contrôle de procédé.",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan de validation système", "Rapport de validation", "Matrice de traçabilité des exigences"]
+        },
+        {
+          "code": "A11.2",
+          "question": "Les accès aux systèmes informatisés sont-ils contrôlés par des comptes nominatifs et des droits appropriés ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique de gestion des accès", "Matrice des droits", "Revue périodique des accès"]
+        },
+        {
+          "code": "A11.3",
+          "question": "Les pistes d'audit (audit trails) sont-elles activées et régulièrement revues ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Configuration audit trail dans le système", "Procédure de revue", "Exemples de revues effectuées"]
+        }
+      ]
+    }
+  ]
+}

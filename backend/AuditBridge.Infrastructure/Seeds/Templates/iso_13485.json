@@ -1,0 +1,86 @@
+{
+  "referential_code": "ISO_13485",
+  "sections": [
+    {
+      "code": "CH_4",
+      "title": "Système de management de la qualité — dispositifs médicaux",
+      "questions": [
+        {
+          "code": "4.1",
+          "question": "L'organisme a-t-il établi, documenté et maintenu un SMQ conforme à la norme ISO 13485 ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Manuel qualité", "Procédures documentées obligatoires"]
+        },
+        {
+          "code": "4.2.3",
+          "question": "Les dossiers techniques des dispositifs médicaux sont-ils complets et accessibles ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Dossier technique par dispositif", "Index des documents réglementaires"]
+        }
+      ]
+    },
+    {
+      "code": "CH_7",
+      "title": "Réalisation du produit",
+      "questions": [
+        {
+          "code": "7.3",
+          "question": "Le processus de conception et développement est-il maîtrisé avec revues, vérification et validation documentées ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan de développement", "Procès-verbaux de revue de conception", "Rapport de validation"]
+        },
+        {
+          "code": "7.4",
+          "question": "Les fournisseurs critiques sont-ils qualifiés et évalués selon des critères définis ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Liste fournisseurs approuvés", "Grille d'évaluation fournisseurs"]
+        },
+        {
+          "code": "7.5.3",
+          "question": "La traçabilité des dispositifs (lot, numéro de série) est-elle assurée tout au long du cycle de vie ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Registre de traçabilité", "Système d'information traçabilité"]
+        },
+        {
+          "code": "7.6",
+          "question": "Les équipements de mesure et de surveillance sont-ils étalonnés et maintenus selon un programme ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Programme d'étalonnage", "Certificats d'étalonnage"]
+        }
+      ]
+    },
+    {
+      "code": "CH_8",
+      "title": "Mesure, analyse et amélioration",
+      "questions": [
+        {
+          "code": "8.2.1",
+          "question": "La surveillance post-commercialisation (SPC/PMCF) est-elle organisée et documentée ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Plan de surveillance post-commercialisation", "Rapports PMCF"]
+        },
+        {
+          "code": "8.3",
+          "question": "Les produits non conformes sont-ils identifiés, isolés et traités selon une procédure définie ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure produit non-conforme", "Registre des non-conformités"]
+        },
+        {
+          "code": "8.5.1",
+          "question": "Le processus de vigilance et de signalement des incidents graves est-il opérationnel ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de vigilance", "Registre des signalements ANSM/autorités"]
+        }
+      ]
+    }
+  ]
+}

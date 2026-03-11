@@ -9,43 +9,157 @@ export type UserRole =
   | "client_viewer"
   | "platform_admin";
 
-export type AuditFramework =
-  | "GMP"
-  | "EU_GMP"
-  | "ISO_9001"
-  | "ISO_27001"
-  | "ISO_14001"
-  | "NIS2"
-  | "RGPD"
-  | "HACCP"
-  | "CSRD"
-  | "DORA"
-  | "CUSTOM";
+export type AnswerType =
+  | "yes_no"
+  | "rating_1_5"
+  | "text"
+  | "file_upload"
+  | "multi_select"
+  | "numeric";
 
-export type CampaignStatus =
-  | "draft"
-  | "sent"
-  | "in_progress"
-  | "client_submitted"
-  | "under_review"
-  | "report_generated"
-  | "closed";
-
+export type Criticality = "info" | "minor" | "major" | "critical";
+export type AuditStatus = "draft" | "active" | "submitted" | "completed" | "archived";
+export type ConformityRating = "compliant" | "minor" | "major" | "critical" | "na";
 export type CapaStatus =
   | "open"
   | "in_progress"
   | "pending_verification"
-  | "closed"
-  | "overdue";
+  | "verified"
+  | "cancelled";
 
-export type CapaSeverity = "minor" | "major" | "critical";
+// ── Referential ───────────────────────────────────────────────────────────
 
-export type AuditorRating =
-  | "compliant"
-  | "minor"
-  | "major"
-  | "critical"
-  | "na";
+export interface ReferentialCategory {
+  id: string;
+  slug: string;
+  label: string;
+  color: string;
+  icon: string;
+}
+
+export interface Referential {
+  id: string;
+  categoryId: string;
+  category?: ReferentialCategory;
+  organizationId?: string;
+  slug: string;
+  name: string;
+  version: string;
+  description?: string;
+  language: string;
+  isSystem: boolean;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReferentialDetail extends Referential {
+  sections: TemplateSection[];
+}
+
+export interface TemplateSection {
+  id: string;
+  referentialId: string;
+  title: string;
+  description?: string;
+  frameworkRef?: string;
+  orderIndex: number;
+  questions?: TemplateQuestion[];
+}
+
+export interface TemplateQuestion {
+  id: string;
+  sectionId: string;
+  text: string;
+  guidance?: string;
+  regulatoryRef?: string;
+  answerType: AnswerType;
+  criticality: Criticality;
+  isMandatory: boolean;
+  expectedEvidence: string[];
+  tags: string[];
+  orderIndex: number;
+}
+
+// ── Audit ─────────────────────────────────────────────────────────────────
+
+export interface Audit {
+  id: string;
+  organizationId: string;
+  referentialId: string;
+  referential?: Referential;
+  clientOrgId?: string;
+  title: string;
+  status: AuditStatus;
+  scheduledDate?: string;
+  deadline?: string;
+  scope?: string;
+  complianceScore?: number;
+  clientToken?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuditSection {
+  id: string;
+  title: string;
+  orderIndex: number;
+  questions: AuditQuestion[];
+}
+
+export interface AuditQuestion {
+  id: string;
+  code: string;
+  text: string;
+  guidance?: string;
+  answerType: AnswerType;
+  isMandatory: boolean;
+  criticality: Criticality;
+}
+
+export interface AuditDetail extends Audit {
+  sections: AuditSection[];
+  responses: AuditResponse[];
+  capas: AuditCapa[];
+}
+
+export interface AuditResponse {
+  id: string;
+  auditId: string;
+  questionId: string;
+  question?: TemplateQuestion;
+  answerValue?: string;
+  conformity?: ConformityRating;
+  comment?: string;
+  aiAnalysis?: string;
+  isFlagged: boolean;
+  updatedAt: string;
+}
+
+export interface AuditCapa {
+  id: string;
+  auditId: string;
+  responseId?: string;
+  title: string;
+  description?: string;
+  status: CapaStatus;
+  assignedTo?: string;
+  dueDate?: string;
+  completedAt?: string;
+  verifiedAt?: string;
+  aiGenerated: boolean;
+  createdAt: string;
+}
+
+export interface AuditReport {
+  id: string;
+  auditId: string;
+  narrative?: string;
+  pdfUrl?: string;
+  generatedAt: string;
+}
+
+// ── Organization / User ───────────────────────────────────────────────────
 
 export interface Organization {
   id: string;
@@ -71,76 +185,7 @@ export interface User {
   createdAt: string;
 }
 
-export interface AuditTemplate {
-  id: string;
-  organizationId: string;
-  name: string;
-  framework: AuditFramework;
-  version: string;
-  language: string;
-  description?: string;
-  isPublic: boolean;
-  sections: TemplateSection[];
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface TemplateSection {
-  id: string;
-  templateId: string;
-  title: string;
-  description?: string;
-  orderIndex: number;
-  frameworkReference?: string;
-  isMandatory: boolean;
-  questions?: TemplateQuestion[];
-}
-
-export interface TemplateQuestion {
-  id: string;
-  sectionId: string;
-  text: string;
-  type: "yes_no" | "rating" | "text" | "file_upload" | "multi_select";
-  isMandatory: boolean;
-  weight: number;
-  gmpCritical: boolean;
-  regulatoryReference?: string;
-  guidance?: string;
-  orderIndex: number;
-}
-
-export interface AuditCampaign {
-  id: string;
-  templateId: string;
-  auditorOrgId: string;
-  clientOrgId: string;
-  leadAuditorId: string;
-  title: string;
-  status: CampaignStatus;
-  scheduledDate?: string;
-  deadline?: string;
-  scope?: string;
-  complianceScore?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CapaAction {
-  id: string;
-  campaignId: string;
-  responseId?: string;
-  title: string;
-  description?: string;
-  severity: CapaSeverity;
-  status: CapaStatus;
-  assignedTo?: string;
-  dueDate?: string;
-  closedAt?: string;
-  closingEvidence?: string;
-  aiGenerated: boolean;
-  createdAt: string;
-}
+// ── API helpers ───────────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {
   data: T;

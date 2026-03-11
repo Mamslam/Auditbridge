@@ -7,6 +7,8 @@ const isPublicRoute = createRouteMatcher([
   "/pricing(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/onboarding(.*)",
+  "/audit/(.*)",           // public client token portal
   "/api/webhooks/(.*)",
 ]);
 

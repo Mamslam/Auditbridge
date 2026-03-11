@@ -1,0 +1,79 @@
+{
+  "referential_code": "HDS",
+  "sections": [
+    {
+      "code": "ORGANISATION",
+      "title": "Organisation et gouvernance",
+      "questions": [
+        {
+          "code": "HDS.1",
+          "question": "L'hébergeur dispose-t-il d'une certification HDS valide délivrée par un organisme accrédité COFRAC ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Certificat HDS en cours de validité", "Périmètre de certification"]
+        },
+        {
+          "code": "HDS.2",
+          "question": "Un DPO (Délégué à la Protection des Données) est-il désigné et ses coordonnées déclarées à la CNIL ?",
+          "answer_type": "yesno_na",
+          "criticality": "major",
+          "expected_evidence": ["Désignation CNIL du DPO", "Coordonnées publiées"]
+        },
+        {
+          "code": "HDS.3",
+          "question": "Les contrats avec les clients (établissements de santé) incluent-ils les clauses HDS réglementaires ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Contrat d'hébergement conforme art. L.1111-8 CSP"]
+        }
+      ]
+    },
+    {
+      "code": "SECURITE_DONNEES",
+      "title": "Sécurité des données de santé",
+      "questions": [
+        {
+          "code": "HDS.4",
+          "question": "Les données de santé sont-elles chiffrées au repos et en transit avec des algorithmes agréés ANSSI ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique de chiffrement", "Certificats et algorithmes utilisés"]
+        },
+        {
+          "code": "HDS.5",
+          "question": "Les sauvegardes des données de santé sont-elles réalisées, chiffrées et testées régulièrement ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Politique de sauvegarde", "Tests de restauration documentés"]
+        },
+        {
+          "code": "HDS.6",
+          "question": "Les accès aux données de santé sont-ils tracés et les journaux conservés conformément aux exigences ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Journaux d'accès aux données", "Politique de rétention des logs"]
+        }
+      ]
+    },
+    {
+      "code": "CONTINUITE",
+      "title": "Continuité et gestion des incidents",
+      "questions": [
+        {
+          "code": "HDS.7",
+          "question": "Un PCA/PRA spécifique aux données de santé est-il en place avec des RTO/RPO définis et testés ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["PCA/PRA avec RTO/RPO", "Comptes rendus de tests"]
+        },
+        {
+          "code": "HDS.8",
+          "question": "Les incidents de sécurité affectant des données de santé sont-ils notifiés au CERT Santé et à la CNIL dans les délais ?",
+          "answer_type": "yesno_na",
+          "criticality": "critical",
+          "expected_evidence": ["Procédure de notification incidents", "Historique des déclarations"]
+        }
+      ]
+    }
+  ]
+}
