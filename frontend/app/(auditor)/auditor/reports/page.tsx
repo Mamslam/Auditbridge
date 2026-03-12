@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { auditsApi } from "@/lib/api/audits";
 import { api } from "@/lib/api/client";
 import type { Audit, AuditReport } from "@/lib/types";
-import { FileText, Download, Bot, Loader2, ExternalLink } from "lucide-react";
+import { FileText, Download, Bot, Loader2, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ export default function ReportsPage() {
   const [audits, setAudits] = useState<AuditWithReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
+  const [narrativeLoading, setNarrativeLoading] = useState<string | null>(null);
 
   useEffect(() => {
     auditsApi.getAll()
@@ -57,6 +58,23 @@ export default function ReportsPage() {
       toast.error("Erreur lors de la génération");
     } finally {
       setGenerating(null);
+    }
+  };
+
+  const handleNarrative = async (auditId: string) => {
+    setNarrativeLoading(auditId);
+    try {
+      const narrative = await auditsApi.generateNarrative(auditId);
+      setAudits((prev) => prev.map((a) =>
+        a.id === auditId && a.report
+          ? { ...a, report: { ...a.report, executiveSummary: narrative.executiveSummary } }
+          : a
+      ));
+      toast.success("Synthèse IA générée");
+    } catch {
+      toast.error("Génération IA indisponible (clé API non configurée)");
+    } finally {
+      setNarrativeLoading(null);
     }
   };
 
@@ -129,14 +147,24 @@ export default function ReportsPage() {
 
                 <div className="flex flex-col gap-2 shrink-0">
                   {audit.report ? (
-                    <button
-                      onClick={() => handleGenerate(audit.id)}
-                      disabled={generating === audit.id}
-                      className="flex items-center gap-1.5 text-sm font-medium text-blue-600 border border-blue-200 bg-blue-50 px-3 py-2 rounded-xl hover:bg-blue-100 transition-colors disabled:opacity-50"
-                    >
-                      {generating === audit.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                      PDF
-                    </button>
+                    <>
+                      <button
+                        onClick={() => handleGenerate(audit.id)}
+                        disabled={generating === audit.id}
+                        className="flex items-center gap-1.5 text-sm font-medium text-blue-600 border border-blue-200 bg-blue-50 px-3 py-2 rounded-xl hover:bg-blue-100 transition-colors disabled:opacity-50"
+                      >
+                        {generating === audit.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                        PDF
+                      </button>
+                      <button
+                        onClick={() => handleNarrative(audit.id)}
+                        disabled={narrativeLoading === audit.id}
+                        className="flex items-center gap-1.5 text-sm font-medium text-purple-700 border border-purple-200 bg-purple-50 px-3 py-2 rounded-xl hover:bg-purple-100 transition-colors disabled:opacity-50"
+                      >
+                        {narrativeLoading === audit.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                        Synthèse IA
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => handleGenerate(audit.id)}

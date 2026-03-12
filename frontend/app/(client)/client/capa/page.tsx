@@ -3,17 +3,16 @@
 import { useEffect, useState } from "react";
 import { auditsApi } from "@/lib/api/audits";
 import type { Audit, AuditCapa, CapaStatus } from "@/lib/types";
-import { AlertCircle, CheckCircle2, Clock, Bot, Calendar, Loader2, X } from "lucide-react";
-import { api } from "@/lib/api/client";
+import { AlertCircle, CheckCircle2, Clock, Bot, Calendar, Loader2, X, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 const STATUS_CONFIG: Record<CapaStatus, { label: string; color: string; icon: React.ElementType }> = {
-  open:                 { label: "Ouverte",         color: "text-red-700 bg-red-100 border-red-200",        icon: AlertCircle },
-  in_progress:          { label: "En cours",         color: "text-amber-700 bg-amber-100 border-amber-200",  icon: Clock },
-  pending_verification: { label: "Vérification",     color: "text-blue-700 bg-blue-100 border-blue-200",     icon: Clock },
-  verified:             { label: "Vérifié",          color: "text-emerald-700 bg-emerald-100 border-emerald-200", icon: CheckCircle2 },
-  cancelled:            { label: "Annulé",           color: "text-slate-500 bg-slate-100 border-slate-200",  icon: X },
+  open:                 { label: "Ouverte",       color: "text-red-700 bg-red-100 border-red-200",             icon: AlertCircle },
+  in_progress:          { label: "En cours",       color: "text-amber-700 bg-amber-100 border-amber-200",       icon: Clock },
+  pending_verification: { label: "Vérification",   color: "text-blue-700 bg-blue-100 border-blue-200",          icon: Clock },
+  verified:             { label: "Vérifié",        color: "text-emerald-700 bg-emerald-100 border-emerald-200", icon: CheckCircle2 },
+  cancelled:            { label: "Annulé",         color: "text-slate-500 bg-slate-100 border-slate-200",       icon: X },
 };
 
 interface CapaWithAudit extends AuditCapa {
@@ -24,11 +23,11 @@ export default function CapaPage() {
   const [capas, setCapas] = useState<CapaWithAudit[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<CapaStatus | "all">("all");
-  const [completing, setCompleting] = useState<string | null>(null);
+  const [transitioning, setTransitioning] = useState<string | null>(null);
 
   useEffect(() => {
     auditsApi.getAll()
-      .then(async (audits) => {
+      .then(async (audits: Audit[]) => {
         const all: CapaWithAudit[] = [];
         for (const audit of audits) {
           try {
@@ -43,21 +42,21 @@ export default function CapaPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleComplete = async (capa: CapaWithAudit) => {
-    setCompleting(capa.id);
+  const transition = async (capa: CapaWithAudit, status: CapaStatus) => {
+    setTransitioning(capa.id);
     try {
-      await api.post(`/api/audits/${capa.auditId}/capas/${capa.id}/complete`, {});
-      setCapas((prev) => prev.map((c) => c.id === capa.id ? { ...c, status: "pending_verification" as CapaStatus } : c));
-      toast.success("CAPA marquée comme complétée");
+      const updated = await auditsApi.updateCapaStatus(capa.auditId, capa.id, status);
+      setCapas((prev) => prev.map((c) => c.id === capa.id ? { ...c, ...updated } : c));
+      toast.success("CAPA mise à jour");
     } catch {
       toast.error("Erreur lors de la mise à jour");
     } finally {
-      setCompleting(null);
+      setTransitioning(null);
     }
   };
 
   const filtered = capas.filter((c) => filter === "all" || c.status === filter);
-  const open = capas.filter((c) => c.status === "open" || c.status === "in_progress").length;
+  const openCount = capas.filter((c) => c.status === "open" || c.status === "in_progress").length;
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -66,32 +65,28 @@ export default function CapaPage() {
           <h1 className="text-2xl font-bold text-slate-900">CAPAs</h1>
           <p className="text-slate-500 text-sm mt-0.5">
             Actions correctives et préventives
-            {open > 0 && (
-              <span className="ml-2 text-red-600 font-medium">({open} ouverte{open > 1 ? "s" : ""})</span>
+            {openCount > 0 && (
+              <span className="ml-2 text-red-600 font-medium">({openCount} ouverte{openCount > 1 ? "s" : ""})</span>
             )}
           </p>
         </div>
       </div>
 
-      {/* Status filter */}
       <div className="flex gap-2 flex-wrap mb-6">
-        {(["all", "open", "in_progress", "pending_verification", "verified"] as const).map((s) => {
-          const cfg = s !== "all" ? STATUS_CONFIG[s] : null;
-          return (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
-                filter === s
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-              )}
-            >
-              {s === "all" ? "Toutes" : cfg!.label}
-            </button>
-          );
-        })}
+        {(["all", "open", "in_progress", "pending_verification", "verified", "cancelled"] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilter(s)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
+              filter === s
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+            )}
+          >
+            {s === "all" ? "Toutes" : STATUS_CONFIG[s].label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -113,6 +108,7 @@ export default function CapaPage() {
           {filtered.map((capa) => {
             const cfg = STATUS_CONFIG[capa.status];
             const Icon = cfg.icon;
+            const isBusy = transitioning === capa.id;
             return (
               <div key={capa.id} className="bg-white rounded-2xl border border-slate-200 p-5">
                 <div className="flex items-start gap-4">
@@ -124,6 +120,14 @@ export default function CapaPage() {
                           <Bot className="h-2.5 w-2.5" /> IA
                         </span>
                       )}
+                      <span className={cn(
+                        "text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide",
+                        capa.priority === "critical" ? "text-red-700 bg-red-100" :
+                        capa.priority === "high" ? "text-orange-700 bg-orange-100" :
+                        "text-slate-600 bg-slate-100"
+                      )}>
+                        {capa.priority}
+                      </span>
                     </div>
                     {capa.description && (
                       <p className="text-sm text-slate-500 mb-2">{capa.description}</p>
@@ -133,12 +137,13 @@ export default function CapaPage() {
                       {capa.dueDate && (
                         <span className={cn(
                           "flex items-center gap-1",
-                          new Date(capa.dueDate) < new Date() ? "text-red-500" : ""
+                          new Date(capa.dueDate) < new Date() && capa.status !== "verified" ? "text-red-500" : ""
                         )}>
                           <Calendar className="h-3 w-3" />
-                          Échéance : {new Date(capa.dueDate).toLocaleDateString("fr-FR")}
+                          {new Date(capa.dueDate).toLocaleDateString("fr-FR")}
                         </span>
                       )}
+                      {capa.assignedToEmail && <span>{capa.assignedToEmail}</span>}
                     </div>
                   </div>
 
@@ -147,17 +152,23 @@ export default function CapaPage() {
                       <Icon className="h-3 w-3" />
                       {cfg.label}
                     </span>
+                    {capa.status === "open" && (
+                      <button
+                        onClick={() => transition(capa, "in_progress")}
+                        disabled={isBusy}
+                        className="flex items-center gap-1.5 text-xs font-medium text-blue-700 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 disabled:opacity-60 transition-colors"
+                      >
+                        {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PlayCircle className="h-3.5 w-3.5" />}
+                        Démarrer
+                      </button>
+                    )}
                     {(capa.status === "open" || capa.status === "in_progress") && (
                       <button
-                        onClick={() => handleComplete(capa)}
-                        disabled={completing === capa.id}
+                        onClick={() => transition(capa, "pending_verification")}
+                        disabled={isBusy}
                         className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-xl hover:bg-emerald-100 disabled:opacity-60 transition-colors"
                       >
-                        {completing === capa.id ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                        )}
+                        {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                         Marquer complétée
                       </button>
                     )}

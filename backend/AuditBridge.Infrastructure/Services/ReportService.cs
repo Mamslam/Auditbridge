@@ -222,8 +222,8 @@ public class ReportService
                             c.Item().AlignCenter().Text($"{score.GlobalScore:F1}%")
                                 .FontSize(28).Bold().FontColor(scoreColor);
                             c.Item().AlignCenter().PaddingTop(4).Text(
-                                score.GlobalScore >= 80 ? "✓ Conforme" :
-                                score.GlobalScore >= 60 ? "⚠ À améliorer" : "✗ Non conforme")
+                                score.GlobalScore >= 80 ? "Conforme" :
+                                score.GlobalScore >= 60 ? "A ameliorer" : "Non conforme")
                                 .FontSize(9).FontColor(scoreColor);
                         });
 

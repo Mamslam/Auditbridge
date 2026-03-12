@@ -14,6 +14,7 @@ namespace AuditBridge.API.Controllers;
 public class AuditsController(
     IUnitOfWork unitOfWork,
     ReportService reportService,
+    AiAnalysisService aiAnalysis,
     IHttpContextAccessor httpContext)
     : ControllerBase
 {
@@ -223,6 +224,86 @@ public class AuditsController(
         response.Flag(request.Flagged);
         await unitOfWork.SaveChangesAsync(ct);
         return Ok();
+    }
+
+    // ── AI Analysis ───────────────────────────────────────────────────────
+
+    [HttpPost("{id:guid}/responses/{responseId:guid}/analyze")]
+    public async Task<IActionResult> AnalyzeResponse(
+        Guid id, Guid responseId, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var response = audit.Responses.FirstOrDefault(r => r.Id == responseId);
+        if (response is null) return NotFound("Response not found.");
+        if (string.IsNullOrEmpty(response.AnswerValue))
+            return BadRequest("Response has no answer to analyze.");
+
+        // Find the question text from snapshot
+        var snapshot = JsonDocument.Parse(audit.TemplateSnapshot);
+        string questionText = "", questionCode = "", criticality = "major";
+        foreach (var s in snapshot.RootElement.GetProperty(
+            snapshot.RootElement.TryGetProperty("Sections", out _) ? "Sections" : "sections").EnumerateArray())
+        {
+            var qsKey = s.TryGetProperty("Questions", out _) ? "Questions" : "questions";
+            foreach (var q in s.GetProperty(qsKey).EnumerateArray())
+            {
+                var qIdProp = q.TryGetProperty("Id", out var qid) ? qid : q.GetProperty("id");
+                if (qIdProp.TryGetGuid(out var qGuid) && qGuid == response.QuestionId)
+                {
+                    questionText = (q.TryGetProperty("Question", out var t) ? t : q.GetProperty("question")).GetString() ?? "";
+                    questionCode = (q.TryGetProperty("Code", out var c) ? c : q.TryGetProperty("code", out c) ? c : default).GetString() ?? "";
+                    criticality  = (q.TryGetProperty("Criticality", out var cr) ? cr : q.TryGetProperty("criticality", out cr) ? cr : default).GetString() ?? "major";
+                    break;
+                }
+            }
+        }
+
+        var result = await aiAnalysis.ClassifyAsync(
+            audit.Referential?.Code ?? "", audit.Referential?.Name ?? "",
+            questionCode, questionText,
+            response.AnswerValue + (response.AnswerNotes is not null ? "\n\nNotes: " + response.AnswerNotes : ""),
+            [], ct);
+
+        if (result is null) return StatusCode(502, "AI analysis failed.");
+
+        var analysisJson = JsonSerializer.Serialize(result, new JsonSerializerOptions
+            { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
+        response.SetAiAnalysis(analysisJson);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        return Ok(new ResponseDto(response.Id, response.QuestionId, response.AnswerValue,
+            response.AnswerNotes, response.Conformity, response.AuditorComment,
+            response.IsFlagged, response.AiAnalysis));
+    }
+
+    [HttpPost("{id:guid}/report/narrative")]
+    public async Task<IActionResult> GenerateNarrative(Guid id, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+
+        var score = reportService.ComputeScore(audit);
+        var findings = await unitOfWork.Audits.GetFindingsByAuditIdAsync(id, ct);
+        var capas = audit.Capas.Where(c => c.Status != "cancelled").Select(c => new { c.Title, c.Status, c.Priority }).ToList();
+
+        var narrative = await aiAnalysis.GenerateReportAsync(
+            audit.Referential?.Code ?? "", audit.Referential?.Name ?? "",
+            audit.ClientOrgName ?? "Non renseigné", audit.Scope ?? "Non défini",
+            score.GlobalScore, score.CriticalCount, score.MajorCount, score.MinorCount,
+            findings.Select(f => new { f.FindingType, f.Title, f.Description }).ToList(),
+            capas, ct);
+
+        if (narrative is null) return StatusCode(502, "AI narrative generation failed.");
+
+        var existing = await unitOfWork.Audits.GetReportByAuditIdAsync(id, ct);
+        if (existing is not null)
+        {
+            existing.SetNarrative(narrative.ExecutiveSummary, JsonSerializer.Serialize(narrative));
+            await unitOfWork.SaveChangesAsync(ct);
+        }
+
+        return Ok(narrative);
     }
 
     // ── CAPAs ─────────────────────────────────────────────────────────────

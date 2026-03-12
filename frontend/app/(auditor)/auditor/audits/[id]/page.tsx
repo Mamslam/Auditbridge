@@ -27,9 +27,10 @@ import { Progress } from "@/components/ui/progress";
 import {
   CheckCircle2, AlertTriangle, AlertCircle, XCircle, Minus,
   Plus, FileDown, Copy, ExternalLink, RefreshCw, ChevronRight,
-  Flag, FlagOff, Loader2, Upload, Trash2, File,
+  Flag, FlagOff, Loader2, Upload, Trash2, File, Bot, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // ── Config maps ──────────────────────────────────────────────────────────────
 
@@ -368,6 +369,7 @@ export default function AuditDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [conformityLoading, setConformityLoading] = useState<string | null>(null);
   const [flagLoading, setFlagLoading] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [evidence, setEvidence] = useState<AuditEvidence[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
 
@@ -424,6 +426,22 @@ export default function AuditDetailPage() {
       await load();
     } finally {
       setConformityLoading(null);
+    }
+  }
+
+  async function handleAiAnalyze(questionId: string) {
+    if (!audit) return;
+    const resp = getResponse(questionId);
+    if (!resp) return;
+    setAiLoading(questionId);
+    try {
+      await auditsApi.analyzeResponse(audit.id, resp.id);
+      await load();
+      toast.success("Analyse IA terminée");
+    } catch {
+      toast.error("Analyse IA indisponible (clé API non configurée)");
+    } finally {
+      setAiLoading(null);
     }
   }
 
@@ -766,7 +784,42 @@ export default function AuditDetailPage() {
                               </p>
                             )}
 
-                            <div className="flex justify-end">
+                            {resp?.aiAnalysis && (() => {
+                              try {
+                                const ai = JSON.parse(resp.aiAnalysis);
+                                return (
+                                  <div className="rounded-lg bg-purple-50 border border-purple-100 p-3 space-y-1">
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-700">
+                                      <Bot className="h-3.5 w-3.5" /> Analyse IA
+                                    </div>
+                                    <p className="text-xs text-purple-800">{ai.auditor_recommendation}</p>
+                                    {ai.gaps?.length > 0 && (
+                                      <p className="text-xs text-purple-600">Écarts : {ai.gaps.join(", ")}</p>
+                                    )}
+                                    <div className="flex gap-2 text-[10px] text-purple-500">
+                                      <span>Conformité : <strong>{ai.conformity}</strong></span>
+                                      <span>Risque : <strong>{ai.regulatory_risk}</strong></span>
+                                      <span>Confiance : <strong>{Math.round((ai.confidence ?? 0) * 100)}%</strong></span>
+                                    </div>
+                                  </div>
+                                );
+                              } catch { return null; }
+                            })()}
+
+                            <div className="flex justify-end gap-1">
+                              {resp && (
+                                <Button
+                                  size="sm" variant="ghost"
+                                  className="h-7 text-xs gap-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                                  disabled={aiLoading === question.id}
+                                  onClick={() => handleAiAnalyze(question.id)}
+                                >
+                                  {aiLoading === question.id
+                                    ? <Loader2 className="h-3 w-3 animate-spin" />
+                                    : <Sparkles className="h-3 w-3" />}
+                                  IA
+                                </Button>
+                              )}
                               <Button
                                 size="sm" variant="ghost" className="h-7 text-xs gap-1"
                                 onClick={() => setFindingModal({

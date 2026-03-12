@@ -158,6 +158,18 @@ export const auditsApi = {
   getReport: (auditId: string) =>
     api.get<AuditReport>(`/api/audits/${auditId}/report`),
 
+  // ── AI ────────────────────────────────────────────────────────────────
+  analyzeResponse: (auditId: string, responseId: string) =>
+    api.post<{ id: string; questionId: string; aiAnalysis: string }>(
+      `/api/audits/${auditId}/responses/${responseId}/analyze`, {}),
+
+  generateNarrative: (auditId: string) =>
+    api.post<{
+      executiveSummary: string; auditContext: string; keyFindings: string;
+      riskAssessment: string; capaNarrative: string; conclusion: string;
+      certificationRecommendation?: string;
+    }>(`/api/audits/${auditId}/report/narrative`, {}),
+
   // ── Client portal (anonymous, token-based) ────────────────────────────
   getByToken: (token: string) =>
     api.get<AuditDetail>(`/api/audits/portal/${token}`),
