@@ -18,14 +18,24 @@ export type AnswerType =
   | "numeric";
 
 export type Criticality = "info" | "minor" | "major" | "critical";
+
+// Audit lifecycle: draft → active → submitted → completed → archived
 export type AuditStatus = "draft" | "active" | "submitted" | "completed" | "archived";
-export type ConformityRating = "compliant" | "minor" | "major" | "critical" | "na";
+
+// Conformity verdict on a question response (aligned with backend)
+export type ConformityRating = "compliant" | "minor" | "major" | "critical" | "na" | "pending";
+
+// CAPA lifecycle
 export type CapaStatus =
   | "open"
   | "in_progress"
   | "pending_verification"
   | "verified"
   | "cancelled";
+
+// Finding types (severity of the non-conformity)
+export type FindingType = "nc_critical" | "nc_major" | "nc_minor" | "observation" | "ofi";
+export type FindingStatus = "open" | "acknowledged" | "closed";
 
 // ── Referential ───────────────────────────────────────────────────────────
 
@@ -39,18 +49,16 @@ export interface ReferentialCategory {
 
 export interface Referential {
   id: string;
-  categoryId: string;
+  categoryId?: string;
   category?: ReferentialCategory;
   organizationId?: string;
-  slug: string;
+  code: string;
   name: string;
-  version: string;
+  version?: string;
   description?: string;
-  language: string;
   isSystem: boolean;
   isPublic: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface ReferentialDetail extends Referential {
@@ -85,17 +93,17 @@ export interface TemplateQuestion {
 
 export interface Audit {
   id: string;
-  organizationId: string;
+  orgId: string;
   referentialId: string;
-  referential?: Referential;
-  clientOrgId?: string;
+  referentialName: string;
+  referentialCode: string;
   title: string;
+  description?: string;
   status: AuditStatus;
-  scheduledDate?: string;
-  deadline?: string;
+  clientOrgName?: string;
+  clientEmail?: string;
+  dueDate?: string;
   scope?: string;
-  complianceScore?: number;
-  clientToken?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -118,44 +126,112 @@ export interface AuditQuestion {
 }
 
 export interface AuditDetail extends Audit {
+  referential: Referential;
   sections: AuditSection[];
   responses: AuditResponse[];
   capas: AuditCapa[];
+  findings: AuditFinding[];
+  clientToken?: string;
 }
 
 export interface AuditResponse {
   id: string;
   auditId: string;
   questionId: string;
-  question?: TemplateQuestion;
   answerValue?: string;
+  answerNotes?: string;
   conformity?: ConformityRating;
-  comment?: string;
-  aiAnalysis?: string;
+  auditorComment?: string;
   isFlagged: boolean;
-  updatedAt: string;
+  aiAnalysis?: string;
 }
 
 export interface AuditCapa {
   id: string;
   auditId: string;
+  findingId?: string;
   responseId?: string;
+  questionId?: string;
   title: string;
   description?: string;
+  rootCause?: string;
+  actionType: string;
+  priority: string;
   status: CapaStatus;
-  assignedTo?: string;
+  assignedToEmail?: string;
   dueDate?: string;
   completedAt?: string;
-  verifiedAt?: string;
   aiGenerated: boolean;
+  createdAt?: string;
+}
+
+export interface AuditFinding {
+  id: string;
+  auditId: string;
+  questionId?: string;
+  responseId?: string;
+  findingType: FindingType;
+  title: string;
+  description?: string;
+  observedEvidence?: string;
+  regulatoryRef?: string;
+  status: FindingStatus;
+  capas: AuditCapa[];
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuditEvidence {
+  id: string;
+  auditId: string;
+  findingId?: string;
+  responseId?: string;
+  capaId?: string;
+  fileName: string;
+  storagePath: string;
+  fileSizeBytes: number;
+  mimeType: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface AuditScore {
+  globalScore: number;
+  totalQuestions: number;
+  totalAnswered: number;
+  conformCount: number;
+  minorCount: number;
+  majorCount: number;
+  criticalCount: number;
+  naCount: number;
+  pendingCount: number;
+  sectionScores: SectionScore[];
+}
+
+export interface SectionScore {
+  sectionId: string;
+  title: string;
+  conformityPct: number | null;
+  conformCount: number;
+  minorCount: number;
+  majorCount: number;
+  criticalCount: number;
+  naCount: number;
+  totalQuestions: number;
 }
 
 export interface AuditReport {
   id: string;
   auditId: string;
-  narrative?: string;
-  pdfUrl?: string;
+  conformityScore?: number;
+  totalQuestions?: number;
+  conformCount?: number;
+  nonConformCount?: number;
+  criticalNc: number;
+  majorNc: number;
+  minorNc: number;
+  executiveSummary?: string;
+  pdfStoragePath?: string;
   generatedAt: string;
 }
 

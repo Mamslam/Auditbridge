@@ -1,6 +1,6 @@
 import { ApiResponse, PaginatedResponse } from "@/lib/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5050";
 
 class ApiError extends Error {
   constructor(
@@ -50,6 +50,10 @@ async function fetchWithAuth<T>(
     throw new ApiError(response.status, errorBody.message ?? "API error");
   }
 
+  const contentType = response.headers.get("content-type") ?? "";
+  if (response.status === 204 || !contentType.includes("application/json")) {
+    return undefined as T;
+  }
   return response.json() as Promise<T>;
 }
 

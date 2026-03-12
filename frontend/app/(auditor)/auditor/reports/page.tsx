@@ -39,11 +39,20 @@ export default function ReportsPage() {
   const handleGenerate = async (auditId: string) => {
     setGenerating(auditId);
     try {
-      const report = await auditsApi.generateReport(auditId);
+      const resp = await auditsApi.generateReport(auditId);
+      if (!resp.ok) throw new Error("Échec génération PDF");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `audit-report-${auditId}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+      const report = await auditsApi.getReport(auditId);
       setAudits((prev) =>
         prev.map((a) => (a.id === auditId ? { ...a, report } : a))
       );
-      toast.success("Rapport généré avec succès");
+      toast.success("Rapport généré et téléchargé");
     } catch {
       toast.error("Erreur lors de la génération");
     } finally {
@@ -89,46 +98,45 @@ export default function ReportsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <FileText className="h-4 w-4 text-slate-400 shrink-0" />
                     <h3 className="font-semibold text-slate-900 text-sm truncate">{audit.title}</h3>
-                    {audit.complianceScore != null && (
+                    {audit.report?.conformityScore != null && (
                       <span className={cn(
                         "text-xs font-bold px-2 py-0.5 rounded-full shrink-0",
-                        audit.complianceScore >= 80 ? "text-emerald-700 bg-emerald-100" :
-                        audit.complianceScore >= 60 ? "text-amber-700 bg-amber-100" :
+                        audit.report.conformityScore >= 80 ? "text-emerald-700 bg-emerald-100" :
+                        audit.report.conformityScore >= 60 ? "text-amber-700 bg-amber-100" :
                         "text-red-700 bg-red-100"
                       )}>
-                        {audit.complianceScore}%
+                        {audit.report.conformityScore.toFixed(0)}%
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-400">
-                    {audit.referential?.name ?? "—"} ·{" "}
+                    {audit.referentialName ?? "—"} ·{" "}
                     {new Date(audit.updatedAt).toLocaleDateString("fr-FR")}
                   </p>
 
-                  {audit.report?.narrative && (
+                  {audit.report?.executiveSummary && (
                     <div className="mt-3 bg-purple-50 rounded-xl p-3.5 border border-purple-100">
                       <div className="flex items-center gap-1.5 mb-2">
                         <Bot className="h-3.5 w-3.5 text-purple-600" />
-                        <span className="text-xs font-semibold text-purple-700">Synthèse IA</span>
+                        <span className="text-xs font-semibold text-purple-700">Synthèse</span>
                       </div>
                       <p className="text-xs text-purple-900 leading-relaxed line-clamp-4">
-                        {audit.report.narrative}
+                        {audit.report.executiveSummary}
                       </p>
                     </div>
                   )}
                 </div>
 
                 <div className="flex flex-col gap-2 shrink-0">
-                  {audit.report?.pdfUrl ? (
-                    <a
-                      href={audit.report.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm font-medium text-blue-600 border border-blue-200 bg-blue-50 px-3 py-2 rounded-xl hover:bg-blue-100 transition-colors"
+                  {audit.report ? (
+                    <button
+                      onClick={() => handleGenerate(audit.id)}
+                      disabled={generating === audit.id}
+                      className="flex items-center gap-1.5 text-sm font-medium text-blue-600 border border-blue-200 bg-blue-50 px-3 py-2 rounded-xl hover:bg-blue-100 transition-colors disabled:opacity-50"
                     >
-                      <Download className="h-4 w-4" />
+                      {generating === audit.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                       PDF
-                    </a>
+                    </button>
                   ) : (
                     <button
                       onClick={() => handleGenerate(audit.id)}

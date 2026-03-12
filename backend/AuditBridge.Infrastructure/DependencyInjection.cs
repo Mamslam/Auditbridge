@@ -41,6 +41,9 @@ public static class DependencyInjection
 
         services.AddScoped<ReferentialSeeder>();
         services.AddScoped<AiAnalysisService>();
+        services.AddScoped<ReportService>();
+        services.AddScoped<StorageService>();
+        services.AddHttpClient("supabase");
 
         return services;
     }

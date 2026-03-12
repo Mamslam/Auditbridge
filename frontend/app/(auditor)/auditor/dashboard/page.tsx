@@ -39,9 +39,7 @@ export default function AuditorDashboardPage() {
   const active = audits.filter((a) => a.status === "active").length;
   const submitted = audits.filter((a) => a.status === "submitted").length;
   const completed = audits.filter((a) => a.status === "completed").length;
-  const avgScore = audits
-    .filter((a) => a.complianceScore != null)
-    .reduce((sum, a, _, arr) => sum + (a.complianceScore! / arr.length), 0);
+  const avgScore = 0; // score now loaded separately per audit via /score endpoint
 
   const recent = [...audits]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -118,14 +116,9 @@ export default function AuditorDashboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-slate-900 truncate text-sm">{audit.title}</p>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {audit.referential?.name ?? "—"} · {new Date(audit.updatedAt).toLocaleDateString("fr-FR")}
+                      {audit.referentialName ?? "—"} · {new Date(audit.updatedAt).toLocaleDateString("fr-FR")}
                     </p>
                   </div>
-                  {audit.complianceScore != null && (
-                    <div className={cn("text-sm font-bold", audit.complianceScore >= 80 ? "text-emerald-600" : audit.complianceScore >= 60 ? "text-amber-600" : "text-red-600")}>
-                      {audit.complianceScore}%
-                    </div>
-                  )}
                   <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full", cfg.color)}>
                     <Icon className="h-3 w-3" />
                     {cfg.label}

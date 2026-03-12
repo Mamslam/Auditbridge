@@ -1,6 +1,7 @@
 using AuditBridge.Application.DTOs;
 using AuditBridge.Domain.Entities;
 using AuditBridge.Domain.Interfaces;
+using AuditBridge.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -10,7 +11,10 @@ namespace AuditBridge.API.Controllers;
 [ApiController]
 [Route("api/audits")]
 [Authorize]
-public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpContext)
+public class AuditsController(
+    IUnitOfWork unitOfWork,
+    ReportService reportService,
+    IHttpContextAccessor httpContext)
     : ControllerBase
 {
     private Guid? CurrentOrgId =>
@@ -18,7 +22,8 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
     private Guid? CurrentUserId =>
         httpContext.HttpContext?.Items["CurrentUserId"] as Guid?;
 
-    // GET /api/audits
+    // ── List ──────────────────────────────────────────────────────────────
+
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
@@ -27,7 +32,6 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
         return Ok(audits.Select(MapToDto));
     }
 
-    // GET /api/audits/{id}
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
@@ -36,7 +40,8 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
         return Ok(MapToDetailDto(audit));
     }
 
-    // POST /api/audits
+    // ── Create / Update ───────────────────────────────────────────────────
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateAuditRequest request, CancellationToken ct)
     {
@@ -45,7 +50,6 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
         var referential = await unitOfWork.Referentials.GetByIdWithQuestionsAsync(request.ReferentialId, ct);
         if (referential is null) return BadRequest("Referential not found.");
 
-        // Build template snapshot
         var snapshot = JsonSerializer.Serialize(new
         {
             referential.Id,
@@ -63,10 +67,7 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
             })
         });
 
-        DateOnly? dueDate = null;
-        if (!string.IsNullOrEmpty(request.DueDate) && DateOnly.TryParse(request.DueDate, out var parsed))
-            dueDate = parsed;
-
+        DateOnly? dueDate = ParseDate(request.DueDate);
         var audit = Audit.Create(
             CurrentOrgId.Value, request.ReferentialId, request.Title,
             CurrentUserId.Value, request.ClientOrgName, request.ClientEmail,
@@ -85,29 +86,90 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
         return CreatedAtAction(nameof(GetById), new { id = audit.Id }, MapToDto(audit));
     }
 
-    // POST /api/audits/{id}/activate
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAuditRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        try { audit.Update(request.Title, request.Description, request.Scope, ParseDate(request.DueDate)); }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(MapToDto(audit));
+    }
+
+    // ── State transitions ─────────────────────────────────────────────────
+
     [HttpPost("{id:guid}/activate")]
     public async Task<IActionResult> Activate(Guid id, CancellationToken ct)
     {
         var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
         if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
-        audit.Activate();
+        try { audit.Activate(); }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         await unitOfWork.SaveChangesAsync(ct);
         return Ok(new { audit.ClientToken, audit.ClientTokenExpiresAt });
     }
 
-    // POST /api/audits/{id}/submit
     [HttpPost("{id:guid}/submit")]
     public async Task<IActionResult> Submit(Guid id, CancellationToken ct)
     {
         var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
         if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
-        audit.Submit();
+        try { audit.Submit(); }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         await unitOfWork.SaveChangesAsync(ct);
         return Ok(MapToDto(audit));
     }
 
-    // PUT /api/audits/{id}/responses
+    [HttpPost("{id:guid}/complete")]
+    public async Task<IActionResult> Complete(Guid id, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        try { audit.Complete(); }
+        catch (InvalidOperationException ex) { return Conflict(new { error = ex.Message }); }
+        await unitOfWork.AuditTrail.LogAsync(AuditTrail.Create(
+            tenantId: CurrentOrgId!.Value, action: "audit.completed",
+            entityType: "audit", entityId: audit.Id,
+            actorId: CurrentUserId!.Value, actorType: "auditor"), ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(MapToDto(audit));
+    }
+
+    [HttpPost("{id:guid}/force-close")]
+    public async Task<IActionResult> ForceClose(Guid id, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        audit.ForceClose();
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(MapToDto(audit));
+    }
+
+    [HttpPost("{id:guid}/refresh-token")]
+    public async Task<IActionResult> RefreshToken(Guid id, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        try { audit.RefreshClientToken(); }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(new { audit.ClientToken, audit.ClientTokenExpiresAt });
+    }
+
+    // ── Scoring ───────────────────────────────────────────────────────────
+
+    [HttpGet("{id:guid}/score")]
+    public async Task<IActionResult> GetScore(Guid id, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var score = reportService.ComputeScore(audit);
+        return Ok(MapScoreDto(score));
+    }
+
+    // ── Responses ─────────────────────────────────────────────────────────
+
     [HttpPut("{id:guid}/responses")]
     public async Task<IActionResult> UpsertResponse(
         Guid id, [FromBody] UpsertResponseRequest request, CancellationToken ct)
@@ -130,28 +192,143 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
         return Ok();
     }
 
-    // POST /api/audits/{id}/capas
+    [HttpPut("{id:guid}/responses/{responseId:guid}/conformity")]
+    public async Task<IActionResult> SetConformity(
+        Guid id, Guid responseId, [FromBody] SetConformityRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var response = audit.Responses.FirstOrDefault(r => r.Id == responseId);
+        if (response is null) return NotFound("Response not found.");
+
+        var validConformity = new[] { "compliant", "minor", "major", "critical", "na", "pending" };
+        if (!validConformity.Contains(request.Conformity))
+            return BadRequest($"Invalid conformity value '{request.Conformity}'.");
+
+        response.SetConformity(request.Conformity, request.AuditorComment);
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(new ResponseDto(response.Id, response.QuestionId, response.AnswerValue,
+            response.AnswerNotes, response.Conformity, response.AuditorComment,
+            response.IsFlagged, response.AiAnalysis));
+    }
+
+    [HttpPut("{id:guid}/responses/{responseId:guid}/flag")]
+    public async Task<IActionResult> FlagResponse(
+        Guid id, Guid responseId, [FromBody] FlagRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var response = audit.Responses.FirstOrDefault(r => r.Id == responseId);
+        if (response is null) return NotFound();
+        response.Flag(request.Flagged);
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok();
+    }
+
+    // ── CAPAs ─────────────────────────────────────────────────────────────
+
     [HttpPost("{id:guid}/capas")]
     public async Task<IActionResult> CreateCapa(
         Guid id, [FromBody] CreateCapaRequest request, CancellationToken ct)
     {
         var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
         if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
-
-        DateOnly? dueDate = null;
-        if (!string.IsNullOrEmpty(request.DueDate) && DateOnly.TryParse(request.DueDate, out var parsed))
-            dueDate = parsed;
-
-        var capa = AuditCapa.Create(
-            id, request.Title, request.Priority, request.ActionType,
-            request.QuestionId, request.ResponseId, request.Description,
-            request.AssignedToEmail, dueDate);
+        var capa = AuditCapa.Create(id, request.Title, request.Priority, request.ActionType,
+            request.FindingId, request.QuestionId, request.ResponseId,
+            request.Description, request.AssignedToEmail, ParseDate(request.DueDate));
         await unitOfWork.Audits.AddCapaAsync(capa, ct);
         await unitOfWork.SaveChangesAsync(ct);
         return Ok(MapCapaDto(capa));
     }
 
-    // Client portal
+    [HttpPut("{id:guid}/capas/{capaId:guid}")]
+    public async Task<IActionResult> UpdateCapa(
+        Guid id, Guid capaId, [FromBody] UpdateCapaRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var capa = await unitOfWork.Audits.GetCapaByIdAsync(capaId, ct);
+        if (capa is null || capa.AuditId != id) return NotFound();
+        capa.Update(request.Title, request.Description, request.RootCause,
+            request.ActionType, request.Priority, request.AssignedToEmail, ParseDate(request.DueDate));
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(MapCapaDto(capa));
+    }
+
+    [HttpPost("{id:guid}/capas/{capaId:guid}/status")]
+    public async Task<IActionResult> UpdateCapaStatus(
+        Guid id, Guid capaId, [FromBody] CapaStatusRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var capa = await unitOfWork.Audits.GetCapaByIdAsync(capaId, ct);
+        if (capa is null || capa.AuditId != id) return NotFound();
+        try
+        {
+            switch (request.Status)
+            {
+                case "in_progress":          capa.StartProgress(); break;
+                case "pending_verification": capa.Complete(); break;
+                case "verified":             capa.Verify(CurrentUserId!.Value); break;
+                case "cancelled":            capa.Cancel(); break;
+                default: return BadRequest($"Unknown status transition '{request.Status}'.");
+            }
+        }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(MapCapaDto(capa));
+    }
+
+    // ── Report ────────────────────────────────────────────────────────────
+
+    [HttpPost("{id:guid}/report")]
+    public async Task<IActionResult> GenerateReport(
+        Guid id, [FromBody] GenerateReportRequest? request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+
+        var score = reportService.ComputeScore(audit);
+        var findings = await unitOfWork.Audits.GetFindingsByAuditIdAsync(id, ct);
+        var pdfBytes = reportService.GeneratePdf(audit, score, findings);
+
+        var reportRecord = AuditReport.Create(
+            auditId: id, generatedBy: CurrentUserId,
+            conformityScore: score.GlobalScore, totalQuestions: score.TotalQuestions,
+            conformCount: score.ConformCount, nonConformCount: score.TotalNonConform,
+            partialCount: score.MinorCount, naCount: score.NaCount,
+            criticalNc: score.CriticalCount, majorNc: score.MajorCount, minorNc: score.MinorCount,
+            reportDataJson: JsonSerializer.Serialize(MapScoreDto(score)));
+
+        if (request?.ExecutiveSummary is not null)
+            reportRecord.SetNarrative(request.ExecutiveSummary, "");
+
+        reportRecord.SetPdf($"reports/{id}.pdf",
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(pdfBytes)));
+
+        var existing = await unitOfWork.Audits.GetReportByAuditIdAsync(id, ct);
+        if (existing is null)
+            await unitOfWork.Audits.AddReportAsync(reportRecord, ct);
+
+        await unitOfWork.SaveChangesAsync(ct);
+        return File(pdfBytes, "application/pdf", $"audit-report-{id}.pdf");
+    }
+
+    [HttpGet("{id:guid}/report")]
+    public async Task<IActionResult> GetReport(Guid id, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var report = await unitOfWork.Audits.GetReportByAuditIdAsync(id, ct);
+        if (report is null) return NotFound("No report generated yet.");
+        return Ok(new ReportDto(report.Id, report.AuditId, report.ConformityScore,
+            report.TotalQuestions, report.ConformCount, report.NonConformCount,
+            report.CriticalNc, report.MajorNc, report.MinorNc,
+            report.ExecutiveSummary, report.PdfStoragePath, report.GeneratedAt));
+    }
+
+    // ── Client portal ─────────────────────────────────────────────────────
+
     [AllowAnonymous]
     [HttpGet("portal/{token}")]
     public async Task<IActionResult> GetByToken(string token, CancellationToken ct)
@@ -167,7 +344,8 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
     {
         var audit = await unitOfWork.Audits.GetByClientTokenAsync(token, ct);
         if (audit is null) return NotFound();
-        audit.Submit();
+        try { audit.Submit(); }
+        catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         await unitOfWork.SaveChangesAsync(ct);
         return Ok(MapToDto(audit));
     }
@@ -179,7 +357,6 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
     {
         var audit = await unitOfWork.Audits.GetByClientTokenAsync(token, ct);
         if (audit is null) return NotFound();
-
         var existing = audit.Responses.FirstOrDefault(r => r.QuestionId == request.QuestionId);
         if (existing is null)
         {
@@ -187,13 +364,12 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
             response.SetAnswer(request.AnswerValue, request.AnswerNotes, true);
             await unitOfWork.Audits.AddResponseAsync(response, ct);
         }
-        else
-        {
-            existing.SetAnswer(request.AnswerValue, request.AnswerNotes, true);
-        }
+        else { existing.SetAnswer(request.AnswerValue, request.AnswerNotes, true); }
         await unitOfWork.SaveChangesAsync(ct);
         return Ok();
     }
+
+    // ── Mapping helpers ───────────────────────────────────────────────────
 
     private static AuditDto MapToDto(Audit a) => new(
         a.Id, a.OrgId, a.ReferentialId,
@@ -203,64 +379,89 @@ public class AuditsController(IUnitOfWork unitOfWork, IHttpContextAccessor httpC
         a.DueDate?.ToString("yyyy-MM-dd"), a.Scope,
         a.CreatedAt, a.UpdatedAt);
 
-    private static AuditDetailDto MapToDetailDto(Audit a)
+    private static AuditDetailDto MapToDetailDto(Audit a) => new(
+        a.Id, a.OrgId,
+        a.Referential is null
+            ? new(Guid.Empty, null, "", "", null, null, false, false, null, 0, 0, default)
+            : new(a.Referential.Id, a.Referential.OrgId, a.Referential.Code, a.Referential.Name,
+                a.Referential.Version, a.Referential.Description, a.Referential.IsSystem, a.Referential.IsPublic,
+                null, 0, 0, a.Referential.CreatedAt),
+        a.Title, a.Description, a.Status, a.ClientOrgName, a.ClientEmail,
+        a.ClientToken, a.DueDate?.ToString("yyyy-MM-dd"), a.Scope,
+        ParseSections(a.TemplateSnapshot),
+        a.Responses.Select(r => new ResponseDto(
+            r.Id, r.QuestionId, r.AnswerValue, r.AnswerNotes,
+            r.Conformity, r.AuditorComment, r.IsFlagged, r.AiAnalysis)).ToList(),
+        a.Capas.Select(MapCapaDto).ToList(),
+        a.Findings.Select(MapFindingDto).ToList(),
+        a.CreatedAt);
+
+    internal static CapaDto MapCapaDto(AuditCapa c) => new(
+        c.Id, c.Title, c.Description, c.RootCause, c.ActionType, c.Priority, c.Status,
+        c.AssignedToEmail, c.DueDate?.ToString("yyyy-MM-dd"),
+        c.CompletedAt?.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+        c.AiGenerated, c.QuestionId, c.FindingId);
+
+    internal static FindingDto MapFindingDto(AuditFinding f) => new(
+        f.Id, f.AuditId, f.QuestionId, f.ResponseId,
+        f.FindingType, f.Title, f.Description, f.ObservedEvidence,
+        f.RegulatoryRef, f.Status,
+        f.Capas.Select(MapCapaDto).ToList(),
+        f.CreatedAt, f.UpdatedAt);
+
+    private static AuditScoreDto MapScoreDto(AuditScoreResult s) => new(
+        s.GlobalScore, s.TotalQuestions, s.TotalAnswered,
+        s.ConformCount, s.MinorCount, s.MajorCount, s.CriticalCount,
+        s.NaCount, s.PendingCount,
+        s.SectionScores.Select(ss => new SectionScoreDto(
+            ss.SectionId.ToString(), ss.Title, ss.ConformityPct,
+            ss.ConformCount, ss.MinorCount, ss.MajorCount, ss.CriticalCount,
+            ss.NaCount, ss.TotalQuestions)).ToList());
+
+    private static List<AuditSectionDto> ParseSections(string snapshotJson)
     {
-        // Parse template snapshot to get sections/questions for the portal
         var sections = new List<AuditSectionDto>();
         try
         {
-            var snapshot = JsonDocument.Parse(a.TemplateSnapshot);
-            if (snapshot.RootElement.TryGetProperty("Sections", out var sectionsEl) ||
-                snapshot.RootElement.TryGetProperty("sections", out sectionsEl))
+            var snapshot = JsonDocument.Parse(snapshotJson);
+            if (!snapshot.RootElement.TryGetProperty("Sections", out var sectionsEl) &&
+                !snapshot.RootElement.TryGetProperty("sections", out sectionsEl))
+                return sections;
+
+            foreach (var s in sectionsEl.EnumerateArray())
             {
-                foreach (var s in sectionsEl.EnumerateArray())
+                var questions = new List<AuditQuestionDto>();
+                if (s.TryGetProperty("Questions", out var qsEl) || s.TryGetProperty("questions", out qsEl))
                 {
-                    var questions = new List<AuditQuestionDto>();
-                    if (s.TryGetProperty("Questions", out var qsEl) || s.TryGetProperty("questions", out qsEl))
+                    foreach (var q in qsEl.EnumerateArray())
                     {
-                        foreach (var q in qsEl.EnumerateArray())
-                        {
-                            var text = q.TryGetProperty("Question", out var t) ? t.GetString()
-                                     : q.TryGetProperty("question", out t) ? t.GetString() : null;
-                            questions.Add(new AuditQuestionDto(
-                                Id: q.TryGetProperty("Id", out var id) ? id.GetString()! : q.GetProperty("id").GetString()!,
-                                Code: q.TryGetProperty("Code", out var code) ? code.GetString() ?? "" : q.GetProperty("code").GetString() ?? "",
-                                Text: text ?? "",
-                                Guidance: q.TryGetProperty("Guidance", out var g) ? g.GetString() : q.TryGetProperty("guidance", out g) ? g.GetString() : null,
-                                AnswerType: q.TryGetProperty("AnswerType", out var at) ? at.GetString() ?? "yes_no" : q.TryGetProperty("answerType", out at) ? at.GetString() ?? "yes_no" : "yes_no",
-                                IsMandatory: q.TryGetProperty("IsMandatory", out var im) ? im.GetBoolean() : q.TryGetProperty("isMandatory", out im) && im.GetBoolean(),
-                                Criticality: q.TryGetProperty("Criticality", out var cr) ? cr.GetString() ?? "minor" : q.TryGetProperty("criticality", out cr) ? cr.GetString() ?? "minor" : "minor"
-                            ));
-                        }
+                        var text = q.TryGetProperty("Question", out var t) ? t.GetString()
+                                 : q.TryGetProperty("question", out t) ? t.GetString() : null;
+                        questions.Add(new AuditQuestionDto(
+                            Id: q.TryGetProperty("Id", out var id) ? id.GetString()! : q.GetProperty("id").GetString()!,
+                            Code: q.TryGetProperty("Code", out var code) ? code.GetString() ?? "" : q.TryGetProperty("code", out code) ? code.GetString() ?? "" : "",
+                            Text: text ?? "",
+                            Guidance: q.TryGetProperty("Guidance", out var g) ? g.GetString() : q.TryGetProperty("guidance", out g) ? g.GetString() : null,
+                            AnswerType: q.TryGetProperty("AnswerType", out var at) ? at.GetString() ?? "yes_no" : q.TryGetProperty("answerType", out at) ? at.GetString() ?? "yes_no" : "yes_no",
+                            IsMandatory: q.TryGetProperty("IsMandatory", out var im) ? im.GetBoolean() : q.TryGetProperty("isMandatory", out im) && im.GetBoolean(),
+                            Criticality: q.TryGetProperty("Criticality", out var cr) ? cr.GetString() ?? "major" : q.TryGetProperty("criticality", out cr) ? cr.GetString() ?? "major" : "major"
+                        ));
                     }
-                    sections.Add(new AuditSectionDto(
-                        Id: s.TryGetProperty("Id", out var sid) ? sid.GetString()! : s.GetProperty("id").GetString()!,
-                        Title: s.TryGetProperty("Title", out var title) ? title.GetString() ?? "" : s.GetProperty("title").GetString() ?? "",
-                        OrderIndex: s.TryGetProperty("OrderIndex", out var oi) ? oi.GetInt32() : s.TryGetProperty("orderIndex", out oi) ? oi.GetInt32() : 0,
-                        Questions: questions
-                    ));
                 }
+                sections.Add(new AuditSectionDto(
+                    Id: s.TryGetProperty("Id", out var sid) ? sid.GetString()! : s.GetProperty("id").GetString()!,
+                    Title: s.TryGetProperty("Title", out var title) ? title.GetString() ?? "" : s.TryGetProperty("title", out title) ? title.GetString() ?? "" : "",
+                    OrderIndex: s.TryGetProperty("OrderIndex", out var oi) ? oi.GetInt32() : s.TryGetProperty("orderIndex", out oi) ? oi.GetInt32() : 0,
+                    Questions: questions
+                ));
             }
         }
         catch { /* snapshot parse failure — sections stays empty */ }
-
-        return new(
-            a.Id, a.OrgId,
-            a.Referential is null ? new(Guid.Empty, null, "", "", null, null, false, false, null, 0, 0, default) :
-                new(a.Referential.Id, a.Referential.OrgId, a.Referential.Code, a.Referential.Name,
-                    a.Referential.Version, a.Referential.Description, a.Referential.IsSystem, a.Referential.IsPublic,
-                    null, 0, 0, a.Referential.CreatedAt),
-            a.Title, a.Status, a.ClientOrgName, a.ClientEmail,
-            a.ClientToken, a.DueDate?.ToString("yyyy-MM-dd"), a.Scope,
-            sections,
-            a.Responses.Select(r => new ResponseDto(
-                r.Id, r.QuestionId, r.AnswerValue, r.AnswerNotes,
-                r.Conformity, r.AuditorComment, r.IsFlagged, r.AiAnalysis)).ToList(),
-            a.Capas.Select(MapCapaDto).ToList(),
-            a.CreatedAt);
+        return sections;
     }
 
-    private static CapaDto MapCapaDto(AuditCapa c) => new(
-        c.Id, c.Title, c.Description, c.ActionType, c.Priority, c.Status,
-        c.AssignedToEmail, c.DueDate?.ToString("yyyy-MM-dd"), c.AiGenerated, c.QuestionId);
+    private static DateOnly? ParseDate(string? s) =>
+        !string.IsNullOrEmpty(s) && DateOnly.TryParse(s, out var d) ? d : null;
 }
+
+public record FlagRequest(bool Flagged);

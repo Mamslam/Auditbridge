@@ -57,10 +57,10 @@ function TemplateEditorInner() {
           ...data,
           sections: data.sections.map((s) => ({
             ...s,
-            questions: (s.questions ?? []).map((q: Record<string, unknown>) => ({
+            questions: (s.questions ?? []).map((q: TemplateQuestion) => ({
               ...q,
-              text: (q.question ?? q.text) as string,
-            })) as unknown as TemplateQuestion[],
+              text: (q as unknown as Record<string, unknown>).question as string ?? q.text,
+            })) as TemplateQuestion[],
           })),
         };
         setReferential(mapped);

@@ -29,7 +29,7 @@ export default function ReferentialsPage() {
     const matchesSearch =
       !search ||
       r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.slug.toLowerCase().includes(search.toLowerCase());
+      r.code.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = !activeCategory || r.category?.slug === activeCategory;
     return matchesSearch && matchesCategory;
   });

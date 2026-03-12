@@ -4,6 +4,9 @@ namespace AuditBridge.Tests.Domain;
 
 public class AuditTests
 {
+    private static Audit MakeAudit() =>
+        Audit.Create(Guid.NewGuid(), Guid.NewGuid(), "Audit ISO 9001", Guid.NewGuid(), "Client XYZ", "client@xyz.fr", "{}");
+
     [Fact]
     public void Create_ValidData_ReturnsAuditWithDraftStatus()
     {
@@ -29,8 +32,7 @@ public class AuditTests
     [Fact]
     public void Activate_SetsActiveStatusAndToken()
     {
-        var audit = Audit.Create(Guid.NewGuid(), Guid.NewGuid(), "Test", Guid.NewGuid(), "Client", "c@c.fr", "{}");
-
+        var audit = MakeAudit();
         audit.Activate();
 
         audit.Status.Should().Be("active");
@@ -39,11 +41,106 @@ public class AuditTests
     }
 
     [Fact]
+    public void Activate_FromNonDraft_Throws()
+    {
+        var audit = MakeAudit();
+        audit.Activate(); // now active
+
+        var act = () => audit.Activate();
+        act.Should().Throw<InvalidOperationException>().WithMessage("*draft*");
+    }
+
+    [Fact]
     public void Submit_SetsSubmittedStatus()
     {
-        var audit = Audit.Create(Guid.NewGuid(), Guid.NewGuid(), "Test", Guid.NewGuid(), "Client", "c@c.fr", "{}");
+        var audit = MakeAudit();
         audit.Activate();
         audit.Submit();
+
         audit.Status.Should().Be("submitted");
+    }
+
+    [Fact]
+    public void Submit_FromNonActive_Throws()
+    {
+        var audit = MakeAudit(); // draft
+
+        var act = () => audit.Submit();
+        act.Should().Throw<InvalidOperationException>().WithMessage("*active*");
+    }
+
+    [Fact]
+    public void Complete_SetsCompletedStatus()
+    {
+        var audit = MakeAudit();
+        audit.Activate();
+        audit.Submit();
+        audit.Complete();
+
+        audit.Status.Should().Be("completed");
+    }
+
+    [Fact]
+    public void Complete_FromNonSubmitted_Throws()
+    {
+        var audit = MakeAudit();
+        audit.Activate(); // active, not submitted
+
+        var act = () => audit.Complete();
+        act.Should().Throw<InvalidOperationException>().WithMessage("*submitted*");
+    }
+
+    [Fact]
+    public void Archive_FromCompleted_SetsArchivedStatus()
+    {
+        var audit = MakeAudit();
+        audit.Activate();
+        audit.Submit();
+        audit.Complete();
+        audit.Archive();
+
+        audit.Status.Should().Be("archived");
+    }
+
+    [Fact]
+    public void Archive_FromNonCompleted_Throws()
+    {
+        var audit = MakeAudit();
+        audit.Activate();
+        audit.Submit();
+        // status = submitted, not completed
+
+        var act = () => audit.Archive();
+        act.Should().Throw<InvalidOperationException>().WithMessage("*completed*");
+    }
+
+    [Fact]
+    public void ForceClose_SetsCompletedFromAnyStatus()
+    {
+        var audit = MakeAudit(); // draft
+        audit.ForceClose();
+
+        audit.Status.Should().Be("completed");
+    }
+
+    [Fact]
+    public void Update_OnCompletedAudit_Throws()
+    {
+        var audit = MakeAudit();
+        audit.Activate();
+        audit.Submit();
+        audit.Complete();
+
+        var act = () => audit.Update("New Title", null, null, null);
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void RefreshClientToken_OnNonActive_Throws()
+    {
+        var audit = MakeAudit(); // draft
+
+        var act = () => audit.RefreshClientToken();
+        act.Should().Throw<InvalidOperationException>().WithMessage("*active*");
     }
 }

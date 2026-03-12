@@ -120,18 +120,11 @@ export default function AuditsPage() {
                     <p className="text-sm font-medium text-slate-900 truncate">{audit.title}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{new Date(audit.createdAt).toLocaleDateString("fr-FR")}</p>
                   </div>
-                  <span className="text-sm text-slate-600 whitespace-nowrap">{audit.referential?.name ?? "—"}</span>
+                  <span className="text-sm text-slate-600 whitespace-nowrap">{audit.referentialName ?? "—"}</span>
                   <span className="text-sm text-slate-500 whitespace-nowrap">
-                    {audit.deadline ? new Date(audit.deadline).toLocaleDateString("fr-FR") : "—"}
+                    {audit.dueDate ? new Date(audit.dueDate).toLocaleDateString("fr-FR") : "—"}
                   </span>
-                  <span className={cn(
-                    "text-sm font-bold whitespace-nowrap",
-                    audit.complianceScore == null ? "text-slate-400" :
-                    audit.complianceScore >= 80 ? "text-emerald-600" :
-                    audit.complianceScore >= 60 ? "text-amber-600" : "text-red-600"
-                  )}>
-                    {audit.complianceScore != null ? `${audit.complianceScore}%` : "—"}
-                  </span>
+                  <span className="text-sm font-bold whitespace-nowrap text-slate-400">—</span>
                   <span className={cn("flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap", cfg.color)}>
                     <Icon className="h-3 w-3" />
                     {cfg.label}

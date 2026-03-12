@@ -43,7 +43,7 @@ export default function NewAuditPage() {
       const audit = await auditsApi.create({
         referentialId: selectedRefId,
         title: title.trim(),
-        deadline: deadline || undefined,
+        dueDate: deadline || undefined,
         scope: scope || undefined,
       });
       toast.success("Audit créé avec succès");

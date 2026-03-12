@@ -21,9 +21,7 @@ export default function ClientDashboardPage() {
   const active = audits.filter((a) => a.status === "active").length;
   const submitted = audits.filter((a) => a.status === "submitted").length;
   const completed = audits.filter((a) => a.status === "completed").length;
-  const avgScore = audits
-    .filter((a) => a.complianceScore != null)
-    .reduce((sum, a, _, arr) => sum + (a.complianceScore! / arr.length), 0);
+  const avgScore = 0; // score fetched separately per audit
 
   const recent = [...audits]
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
@@ -84,8 +82,8 @@ export default function ClientDashboardPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-slate-900 text-sm truncate">{audit.title}</p>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {audit.referential?.name ?? "—"}
-                    {audit.deadline && ` · Échéance : ${new Date(audit.deadline).toLocaleDateString("fr-FR")}`}
+                    {audit.referentialName ?? "—"}
+                    {audit.dueDate && ` · Échéance : ${new Date(audit.dueDate).toLocaleDateString("fr-FR")}`}
                   </p>
                 </div>
                 <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 shrink-0">
@@ -99,30 +97,14 @@ export default function ClientDashboardPage() {
       </div>
 
       {/* Compliance gauge */}
-      {audits.filter((a) => a.complianceScore != null).length > 0 && (
+      {audits.filter(a => a.status === "completed").length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900 mb-4">Score de conformité par audit</h2>
-          <div className="space-y-3">
-            {audits.filter((a) => a.complianceScore != null).map((audit) => (
+          <h2 className="font-semibold text-slate-900 mb-4">Audits complétés</h2>
+          <div className="space-y-2">
+            {audits.filter(a => a.status === "completed").map(audit => (
               <div key={audit.id} className="flex items-center gap-3">
-                <p className="text-sm text-slate-700 w-48 truncate shrink-0">{audit.title}</p>
-                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-2 rounded-full transition-all",
-                      audit.complianceScore! >= 80 ? "bg-emerald-500" :
-                      audit.complianceScore! >= 60 ? "bg-amber-500" : "bg-red-500"
-                    )}
-                    style={{ width: `${audit.complianceScore}%` }}
-                  />
-                </div>
-                <span className={cn(
-                  "text-sm font-bold w-12 text-right shrink-0",
-                  audit.complianceScore! >= 80 ? "text-emerald-600" :
-                  audit.complianceScore! >= 60 ? "text-amber-600" : "text-red-600"
-                )}>
-                  {audit.complianceScore}%
-                </span>
+                <p className="text-sm text-slate-700 flex-1 truncate">{audit.title}</p>
+                <span className="text-xs text-slate-400">{audit.referentialCode}</span>
               </div>
             ))}
           </div>

@@ -27,11 +27,19 @@ public record AuditDto(
     DateTimeOffset UpdatedAt
 );
 
+public record UpdateAuditRequest(
+    string Title,
+    string? Description = null,
+    string? Scope = null,
+    string? DueDate = null
+);
+
 public record AuditDetailDto(
     Guid Id,
     Guid OrgId,
     ReferentialDto Referential,
     string Title,
+    string? Description,
     string Status,
     string? ClientOrgName,
     string? ClientEmail,
@@ -41,6 +49,7 @@ public record AuditDetailDto(
     List<AuditSectionDto> Sections,   // parsed from TemplateSnapshot
     List<ResponseDto> Responses,
     List<CapaDto> Capas,
+    List<FindingDto> Findings,
     DateTimeOffset CreatedAt
 );
 
@@ -86,6 +95,7 @@ public record SetConformityRequest(
 
 public record CreateCapaRequest(
     string Title,
+    Guid? FindingId = null,
     Guid? QuestionId = null,
     Guid? ResponseId = null,
     string Priority = "high",
@@ -99,11 +109,66 @@ public record CapaDto(
     Guid Id,
     string Title,
     string? Description,
+    string? RootCause,
     string ActionType,
     string Priority,
     string Status,
     string? AssignedToEmail,
     string? DueDate,
+    string? CompletedAt,
     bool AiGenerated,
-    Guid? QuestionId
+    Guid? QuestionId,
+    Guid? FindingId
+);
+
+public record CreateCapaFromFindingRequest(
+    string Title,
+    Guid FindingId,
+    string Priority = "high",
+    string ActionType = "corrective",
+    string? Description = null,
+    string? AssignedToEmail = null,
+    string? DueDate = null
+);
+
+public record AuditScoreDto(
+    decimal GlobalScore,
+    int TotalQuestions,
+    int TotalAnswered,
+    int ConformCount,
+    int MinorCount,
+    int MajorCount,
+    int CriticalCount,
+    int NaCount,
+    int PendingCount,
+    List<SectionScoreDto> SectionScores
+);
+
+public record SectionScoreDto(
+    string SectionId,
+    string Title,
+    double? ConformityPct,
+    int ConformCount,
+    int MinorCount,
+    int MajorCount,
+    int CriticalCount,
+    int NaCount,
+    int TotalQuestions
+);
+
+public record GenerateReportRequest(string? ExecutiveSummary = null);
+
+public record ReportDto(
+    Guid Id,
+    Guid AuditId,
+    decimal? ConformityScore,
+    int? TotalQuestions,
+    int? ConformCount,
+    int? NonConformCount,
+    int CriticalNc,
+    int MajorNc,
+    int MinorNc,
+    string? ExecutiveSummary,
+    string? PdfStoragePath,
+    DateTimeOffset GeneratedAt
 );

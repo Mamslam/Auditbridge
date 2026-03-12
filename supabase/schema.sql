@@ -139,34 +139,59 @@ CREATE TABLE audit_responses (
   UNIQUE(audit_id, question_id)
 );
 
-CREATE TABLE audit_evidence (
-  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  audit_id           UUID NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
-  response_id        UUID REFERENCES audit_responses(id),
-  question_id        UUID REFERENCES template_questions(id),
-  uploaded_by        UUID REFERENCES users(id),
-  uploaded_by_client BOOLEAN DEFAULT FALSE,
-  file_name          TEXT NOT NULL,
-  file_size          INTEGER,
-  mime_type          TEXT,
-  storage_path       TEXT NOT NULL,
-  sha256_hash        TEXT NOT NULL,
-  is_watermarked     BOOLEAN DEFAULT FALSE,
-  metadata           JSONB DEFAULT '{}',
-  created_at         TIMESTAMPTZ DEFAULT now()
+-- ── Sprint 3: audit_findings ───────────────────────────────────────────────
+-- Formal findings documented during fieldwork.
+-- Types: nc_critical | nc_major | nc_minor | observation | ofi
+-- Status: open | acknowledged | closed
+CREATE TABLE audit_findings (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  audit_id          UUID NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+  question_id       UUID REFERENCES template_questions(id),
+  response_id       UUID REFERENCES audit_responses(id),
+  finding_type      TEXT NOT NULL CHECK (finding_type IN ('nc_critical','nc_major','nc_minor','observation','ofi')),
+  title             TEXT NOT NULL,
+  description       TEXT,
+  observed_evidence TEXT,
+  regulatory_ref    TEXT,
+  status            TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','acknowledged','closed')),
+  created_at        TIMESTAMPTZ DEFAULT now(),
+  updated_at        TIMESTAMPTZ DEFAULT now()
 );
 
+-- ── Sprint 3: audit_evidence ───────────────────────────────────────────────
+-- Files attached as evidence to findings, responses, or CAPAs.
+-- Files stored in Supabase Storage bucket "audit-evidence".
+-- Path convention: {org_id}/{audit_id}/{uuid}/{filename}
+CREATE TABLE audit_evidence (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  audit_id        UUID NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+  finding_id      UUID REFERENCES audit_findings(id) ON DELETE SET NULL,
+  response_id     UUID REFERENCES audit_responses(id),
+  capa_id         UUID,  -- FK added after audit_capas creation below
+  uploaded_by     UUID NOT NULL REFERENCES users(id),
+  file_name       TEXT NOT NULL,
+  storage_path    TEXT NOT NULL,
+  file_size_bytes BIGINT NOT NULL DEFAULT 0,
+  mime_type       TEXT NOT NULL DEFAULT 'application/octet-stream',
+  description     TEXT,
+  created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+-- ── Sprint 3: audit_capas (updated with finding_id) ───────────────────────
+-- CAPAs can now be linked to a finding OR directly to a response.
+-- Status: open | in_progress | pending_verification | verified | cancelled
 CREATE TABLE audit_capas (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   audit_id          UUID NOT NULL REFERENCES audits(id) ON DELETE CASCADE,
+  finding_id        UUID REFERENCES audit_findings(id) ON DELETE SET NULL,
   response_id       UUID REFERENCES audit_responses(id),
   question_id       UUID REFERENCES template_questions(id),
   title             TEXT NOT NULL,
   description       TEXT,
   root_cause        TEXT,
-  action_type       TEXT DEFAULT 'corrective',
-  priority          TEXT DEFAULT 'high',
-  status            TEXT DEFAULT 'open',
+  action_type       TEXT DEFAULT 'corrective' CHECK (action_type IN ('corrective','preventive','improvement')),
+  priority          TEXT DEFAULT 'high' CHECK (priority IN ('critical','high','medium','low')),
+  status            TEXT DEFAULT 'open' CHECK (status IN ('open','in_progress','pending_verification','verified','cancelled')),
   assigned_to_email TEXT,
   due_date          DATE,
   completed_at      TIMESTAMPTZ,
@@ -177,6 +202,10 @@ CREATE TABLE audit_capas (
   created_at        TIMESTAMPTZ DEFAULT now(),
   updated_at        TIMESTAMPTZ DEFAULT now()
 );
+
+-- Complete the capa_id FK on audit_evidence now that audit_capas exists
+ALTER TABLE audit_evidence ADD CONSTRAINT fk_evidence_capa
+  FOREIGN KEY (capa_id) REFERENCES audit_capas(id) ON DELETE SET NULL;
 
 CREATE TABLE audit_reports (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -229,8 +258,13 @@ CREATE INDEX idx_audits_org ON audits(org_id);
 CREATE INDEX idx_audits_referential ON audits(referential_id);
 CREATE INDEX idx_audits_status ON audits(status);
 CREATE INDEX idx_audit_responses_audit ON audit_responses(audit_id);
+CREATE INDEX idx_audit_findings_audit ON audit_findings(audit_id);
+CREATE INDEX idx_audit_findings_type ON audit_findings(finding_type);
 CREATE INDEX idx_audit_evidence_audit ON audit_evidence(audit_id);
+CREATE INDEX idx_audit_evidence_finding ON audit_evidence(finding_id) WHERE finding_id IS NOT NULL;
 CREATE INDEX idx_audit_capas_audit ON audit_capas(audit_id);
+CREATE INDEX idx_audit_capas_finding ON audit_capas(finding_id) WHERE finding_id IS NOT NULL;
+CREATE INDEX idx_audit_capas_status ON audit_capas(status);
 CREATE INDEX idx_audit_trail_tenant ON audit_trail(tenant_id);
 
 -- =============================================
@@ -248,6 +282,7 @@ CREATE TRIGGER trg_referentials_updated_at BEFORE UPDATE ON referentials FOR EAC
 CREATE TRIGGER trg_audits_updated_at BEFORE UPDATE ON audits FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_audit_responses_updated_at BEFORE UPDATE ON audit_responses FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_audit_capas_updated_at BEFORE UPDATE ON audit_capas FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_audit_findings_updated_at BEFORE UPDATE ON audit_findings FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Audit trail immutable
 CREATE OR REPLACE FUNCTION prevent_audit_trail_modification()
@@ -270,6 +305,7 @@ ALTER TABLE template_sections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE template_questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_responses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_findings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_evidence ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_capas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_reports ENABLE ROW LEVEL SECURITY;
@@ -310,8 +346,15 @@ CREATE POLICY "responses_read"   ON audit_responses FOR SELECT USING (audit_id I
 CREATE POLICY "responses_insert" ON audit_responses FOR INSERT WITH CHECK (true);
 CREATE POLICY "responses_write"  ON audit_responses FOR ALL USING (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
 
+-- Findings
+CREATE POLICY "findings_read"   ON audit_findings FOR SELECT USING (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
+CREATE POLICY "findings_insert" ON audit_findings FOR INSERT WITH CHECK (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
+CREATE POLICY "findings_write"  ON audit_findings FOR ALL USING (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
+
+-- Evidence
 CREATE POLICY "evidence_read"   ON audit_evidence FOR SELECT USING (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
-CREATE POLICY "evidence_insert" ON audit_evidence FOR INSERT WITH CHECK (true);
+CREATE POLICY "evidence_insert" ON audit_evidence FOR INSERT WITH CHECK (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
+CREATE POLICY "evidence_delete" ON audit_evidence FOR DELETE USING (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
 
 CREATE POLICY "capas_read"   ON audit_capas FOR SELECT USING (audit_id IN (SELECT id FROM audits WHERE org_id = current_org_id()));
 CREATE POLICY "capas_insert" ON audit_capas FOR INSERT WITH CHECK (true);
@@ -323,3 +366,30 @@ CREATE POLICY "reports_insert" ON audit_reports FOR INSERT WITH CHECK (true);
 -- Audit trail
 CREATE POLICY "trail_read"   ON audit_trail FOR SELECT USING (tenant_id = current_org_id());
 CREATE POLICY "trail_insert" ON audit_trail FOR INSERT WITH CHECK (true);
+
+-- =============================================
+-- SUPABASE STORAGE — audit-evidence bucket
+-- =============================================
+-- Run in Supabase dashboard → Storage → New bucket
+-- Or via supabase CLI: supabase storage create audit-evidence --public false
+--
+-- Storage RLS policies (Supabase Storage uses storage.objects table):
+-- These must be created via the Supabase dashboard or CLI, not raw SQL,
+-- because they depend on the storage schema.
+--
+-- Recommended policies for bucket "audit-evidence":
+--
+-- SELECT (download):
+--   USING ( bucket_id = 'audit-evidence'
+--     AND auth.role() = 'service_role' )
+--   -- Only the backend service role can download; frontend gets signed URLs.
+--
+-- INSERT (upload via signed URL):
+--   WITH CHECK ( bucket_id = 'audit-evidence' )
+--   -- Uploads are authenticated by the signed URL itself.
+--
+-- File path convention: {org_id}/{audit_id}/{uuid}/{filename}
+-- Max file size: 50MB (configure in bucket settings)
+-- Allowed MIME types: image/*, application/pdf, application/msword,
+--   application/vnd.openxmlformats-officedocument.*, text/plain, text/csv
+

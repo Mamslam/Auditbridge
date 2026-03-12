@@ -14,6 +14,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Audit> Audits => Set<Audit>();
     public DbSet<AuditResponse> AuditResponses => Set<AuditResponse>();
     public DbSet<AuditCapa> AuditCapas => Set<AuditCapa>();
+    public DbSet<AuditFinding> AuditFindings => Set<AuditFinding>();
+    public DbSet<AuditEvidence> AuditEvidence => Set<AuditEvidence>();
     public DbSet<AuditReport> AuditReports => Set<AuditReport>();
     public DbSet<AuditTrail> AuditTrails => Set<AuditTrail>();
 
