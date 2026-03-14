@@ -11,6 +11,7 @@ public class UnitOfWork(AppDbContext dbContext) : IUnitOfWork
     private IAuditTrailRepository? _auditTrail;
     private IReferentialRepository? _referentials;
     private IAuditRepository? _audits;
+    private IControlRepository? _controls;
 
     public IOrganizationRepository Organizations =>
         _organizations ??= new OrganizationRepository(dbContext);
@@ -22,6 +23,8 @@ public class UnitOfWork(AppDbContext dbContext) : IUnitOfWork
         _referentials ??= new ReferentialRepository(dbContext);
     public IAuditRepository Audits =>
         _audits ??= new AuditRepository(dbContext);
+    public IControlRepository Controls =>
+        _controls ??= new ControlRepository(dbContext);
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => dbContext.SaveChangesAsync(ct);

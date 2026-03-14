@@ -20,6 +20,7 @@ const NAV = [
   { href: "/auditor/reports", icon: FileText, label: "Rapports" },
   { href: "/auditor/referentials", icon: BookOpen, label: "Référentiels" },
   { href: "/auditor/templates", icon: LayoutTemplate, label: "Templates" },
+  { href: "/auditor/controls", icon: Shield, label: "Contrôles" },
 ];
 
 export default function AuditorLayout({ children }: { children: React.ReactNode }) {

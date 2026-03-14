@@ -18,6 +18,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AuditEvidence> AuditEvidence => Set<AuditEvidence>();
     public DbSet<AuditReport> AuditReports => Set<AuditReport>();
     public DbSet<AuditTrail> AuditTrails => Set<AuditTrail>();
+    public DbSet<Control> Controls => Set<Control>();
+    public DbSet<ControlMapping> ControlMappings => Set<ControlMapping>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

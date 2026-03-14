@@ -558,6 +558,103 @@ namespace AuditBridge.Infrastructure.Migrations
                     b.ToTable("audit_trail", (string)null);
                 });
 
+            modelBuilder.Entity("AuditBridge.Domain.Entities.Control", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("OrgId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("org_id");
+
+                    b.Property<string>("Owner")
+                        .HasColumnType("text")
+                        .HasColumnName("owner");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("controls", (string)null);
+                });
+
+            modelBuilder.Entity("AuditBridge.Domain.Entities.ControlMapping", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ControlId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("control_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid?>("QuestionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("question_id");
+
+                    b.Property<Guid>("ReferentialId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("referential_id");
+
+                    b.Property<Guid?>("SectionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("section_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlId");
+
+                    b.HasIndex("ReferentialId");
+
+                    b.ToTable("control_mappings", (string)null);
+                });
+
             modelBuilder.Entity("AuditBridge.Domain.Entities.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -980,6 +1077,32 @@ namespace AuditBridge.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("AuditBridge.Domain.Entities.Control", b =>
+                {
+                    b.HasOne("AuditBridge.Domain.Entities.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrgId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AuditBridge.Domain.Entities.ControlMapping", b =>
+                {
+                    b.HasOne("AuditBridge.Domain.Entities.Control", "Control")
+                        .WithMany("Mappings")
+                        .HasForeignKey("ControlId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AuditBridge.Domain.Entities.Referential", null)
+                        .WithMany()
+                        .HasForeignKey("ReferentialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Control");
+                });
+
             modelBuilder.Entity("AuditBridge.Domain.Entities.AuditReport", b =>
                 {
                     b.HasOne("AuditBridge.Domain.Entities.Audit", null)
@@ -1064,6 +1187,11 @@ namespace AuditBridge.Infrastructure.Migrations
             modelBuilder.Entity("AuditBridge.Domain.Entities.AuditFinding", b =>
                 {
                     b.Navigation("Capas");
+                });
+
+            modelBuilder.Entity("AuditBridge.Domain.Entities.Control", b =>
+                {
+                    b.Navigation("Mappings");
                 });
 
             modelBuilder.Entity("AuditBridge.Domain.Entities.Organization", b =>

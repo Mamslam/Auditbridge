@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, Plus, Copy, BookOpen, ChevronRight, Lock } from "lucide-react";
+import { Search, Plus, Copy, BookOpen, ChevronRight, Lock, BarChart2 } from "lucide-react";
 import { referentialsApi } from "@/lib/api/referentials";
 import type { Referential, ReferentialCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -182,6 +182,13 @@ function ReferentialCard({
           <Copy className="h-3.5 w-3.5" />
           {duplicating ? "Copie..." : "Dupliquer"}
         </button>
+        <Link
+          href={`/auditor/referentials/${referential.id}/coverage`}
+          className="flex items-center gap-1 text-xs text-slate-500 hover:text-blue-600 transition-colors"
+          title="Analyse de couverture"
+        >
+          <BarChart2 className="h-3.5 w-3.5" />
+        </Link>
         {!referential.isSystem && (
           <Link
             href={`/auditor/templates?ref=${referential.id}`}

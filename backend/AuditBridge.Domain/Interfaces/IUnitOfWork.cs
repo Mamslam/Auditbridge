@@ -7,6 +7,7 @@ public interface IUnitOfWork
     IAuditTrailRepository AuditTrail { get; }
     IReferentialRepository Referentials { get; }
     IAuditRepository Audits { get; }
+    IControlRepository Controls { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 

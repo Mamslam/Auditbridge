@@ -261,6 +261,73 @@ export interface User {
   createdAt: string;
 }
 
+// ── Control Library ───────────────────────────────────────────────────────
+
+export type ControlStatus = "draft" | "active" | "retired";
+
+export interface Control {
+  id: string;
+  orgId: string;
+  code: string;
+  title: string;
+  description?: string;
+  category?: string;
+  owner?: string;
+  status: ControlStatus;
+  mappingCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ControlMapping {
+  id: string;
+  controlId: string;
+  referentialId: string;
+  sectionId?: string;
+  questionId?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface ControlDetail extends Omit<Control, "mappingCount"> {
+  mappings: ControlMapping[];
+}
+
+export interface CoverageControlRef {
+  controlId: string;
+  code: string;
+  title: string;
+  status: ControlStatus;
+}
+
+export interface QuestionCoverage {
+  questionId: string;
+  questionCode?: string;
+  questionText: string;
+  criticality: string;
+  sectionId?: string;
+  controls: CoverageControlRef[];
+}
+
+export interface SectionCoverage {
+  sectionId: string;
+  sectionTitle: string;
+  totalQuestions: number;
+  coveredQuestions: number;
+  coveragePercent: number;
+}
+
+export interface ReferentialCoverage {
+  referentialId: string;
+  referentialName: string;
+  referentialCode: string;
+  totalQuestions: number;
+  coveredQuestions: number;
+  coveragePercent: number;
+  sections: SectionCoverage[];
+  questions: QuestionCoverage[];
+}
+
 // ── API helpers ───────────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {
