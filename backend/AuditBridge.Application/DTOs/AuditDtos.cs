@@ -158,6 +158,37 @@ public record SectionScoreDto(
 
 public record GenerateReportRequest(string? ExecutiveSummary = null);
 
+// ── AI endpoints ──────────────────────────────────────────────────────────────
+
+public record SummarizeFindingRequest(string RawNotes);
+
+public record FindingSummaryDto(
+    string FindingType,
+    string Title,
+    string Description,
+    string? ObservedEvidence,
+    string? RegulatoryRef,
+    string? Recommendation
+);
+
+public record SuggestCapaDto(
+    string Title,
+    string Description,
+    string RootCause,
+    string ActionType,
+    string Priority,
+    string? Rationale
+);
+
+public record AskAuditRequest(string Question, string? AuditContext = null);
+
+public record AskAuditDto(
+    string Answer,
+    string[]? References,
+    string? Confidence,
+    string? Disclaimer
+);
+
 public record ReportDto(
     Guid Id,
     Guid AuditId,

@@ -170,6 +170,23 @@ export const auditsApi = {
       certificationRecommendation?: string;
     }>(`/api/audits/${auditId}/report/narrative`, {}),
 
+  summarizeFinding: (auditId: string, rawNotes: string) =>
+    api.post<{
+      findingType: string; title: string; description: string;
+      observedEvidence?: string; regulatoryRef?: string; recommendation?: string;
+    }>(`/api/audits/${auditId}/findings/summarize`, { rawNotes }),
+
+  suggestCapa: (auditId: string, findingId: string) =>
+    api.post<{
+      title: string; description: string; rootCause: string;
+      actionType: string; priority: string; rationale?: string;
+    }>(`/api/audits/${auditId}/findings/${findingId}/suggest-capa`, {}),
+
+  askAudit: (auditId: string, question: string, auditContext?: string) =>
+    api.post<{
+      answer: string; references?: string[]; confidence?: string; disclaimer?: string;
+    }>(`/api/audits/${auditId}/ask`, { question, auditContext }),
+
   // ── Client portal (anonymous, token-based) ────────────────────────────
   getByToken: (token: string) =>
     api.get<AuditDetail>(`/api/audits/portal/${token}`),

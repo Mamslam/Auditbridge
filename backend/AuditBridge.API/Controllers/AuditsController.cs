@@ -306,6 +306,64 @@ public class AuditsController(
         return Ok(narrative);
     }
 
+    [HttpPost("{id:guid}/findings/summarize")]
+    public async Task<IActionResult> SummarizeFinding(
+        Guid id, [FromBody] SummarizeFindingRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.RawNotes))
+            return BadRequest("rawNotes is required.");
+
+        var result = await aiAnalysis.SummarizeFindingAsync(
+            audit.Referential?.Code ?? "", audit.Referential?.Name ?? "",
+            request.RawNotes, ct);
+
+        if (result is null) return StatusCode(502, "AI summarization failed.");
+
+        return Ok(new FindingSummaryDto(result.FindingType, result.Title, result.Description,
+            result.ObservedEvidence, result.RegulatoryRef, result.Recommendation));
+    }
+
+    [HttpPost("{id:guid}/findings/{findingId:guid}/suggest-capa")]
+    public async Task<IActionResult> SuggestCapa(
+        Guid id, Guid findingId, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var finding = await unitOfWork.Audits.GetFindingByIdAsync(findingId, ct);
+        if (finding is null || finding.AuditId != id) return NotFound("Finding not found.");
+
+        var result = await aiAnalysis.SuggestCapaAsync(
+            finding.FindingType, finding.Title, finding.Description,
+            audit.Referential?.Code ?? "", audit.Referential?.Name ?? "",
+            ct);
+
+        if (result is null) return StatusCode(502, "AI CAPA suggestion failed.");
+
+        return Ok(new SuggestCapaDto(result.Title, result.Description, result.RootCause,
+            result.ActionType, result.Priority, result.Rationale));
+    }
+
+    [HttpPost("{id:guid}/ask")]
+    public async Task<IActionResult> AskAudit(
+        Guid id, [FromBody] AskAuditRequest request, CancellationToken ct)
+    {
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        if (string.IsNullOrWhiteSpace(request.Question))
+            return BadRequest("question is required.");
+
+        var result = await aiAnalysis.AnswerAuditQuestionAsync(
+            request.Question,
+            audit.Referential?.Code ?? "", audit.Referential?.Name ?? "",
+            request.AuditContext, ct);
+
+        if (result is null) return StatusCode(502, "AI question answering failed.");
+
+        return Ok(new AskAuditDto(result.Answer, result.References, result.Confidence, result.Disclaimer));
+    }
+
     // ── CAPAs ─────────────────────────────────────────────────────────────
 
     [HttpPost("{id:guid}/capas")]

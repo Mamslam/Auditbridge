@@ -116,6 +116,9 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rawNotes, setRawNotes] = useState("");
+  const [summarizing, setSummarizing] = useState(false);
+  const [showAiInput, setShowAiInput] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -127,8 +130,33 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
         regulatoryRef: finding?.regulatoryRef ?? "",
       });
       setError(null);
+      setRawNotes("");
+      setShowAiInput(false);
     }
   }, [open, finding]);
+
+  async function handleAiSummarize() {
+    if (!rawNotes.trim()) return;
+    setSummarizing(true);
+    try {
+      const result = await auditsApi.summarizeFinding(auditId, rawNotes);
+      setForm(f => ({
+        ...f,
+        findingType: (result.findingType as FindingType) ?? f.findingType,
+        title: result.title || f.title,
+        description: result.description || f.description,
+        observedEvidence: result.observedEvidence || f.observedEvidence,
+        regulatoryRef: result.regulatoryRef || f.regulatoryRef,
+      }));
+      setShowAiInput(false);
+      setRawNotes("");
+      toast.success("Constat structuré par l'IA");
+    } catch {
+      toast.error("Échec de la structuration IA");
+    } finally {
+      setSummarizing(false);
+    }
+  }
 
   async function handleSave() {
     if (!form.title.trim()) { setError("Le titre est requis."); return; }
@@ -167,8 +195,42 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Modifier le constat" : "Nouveau constat"}</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{isEdit ? "Modifier le constat" : "Nouveau constat"}</span>
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={() => setShowAiInput(v => !v)}
+                className="flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-700 font-medium px-2 py-1 rounded-lg hover:bg-purple-50 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Structurer avec l&apos;IA
+              </button>
+            )}
+          </DialogTitle>
         </DialogHeader>
+
+        {showAiInput && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-2">
+            <p className="text-xs text-purple-700 font-medium">Notes brutes de terrain</p>
+            <Textarea
+              rows={4}
+              value={rawNotes}
+              onChange={e => setRawNotes(e.target.value)}
+              placeholder="Collez vos notes brutes ici — l'IA les transformera en constat structuré…"
+              className="text-sm"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button size="sm" variant="outline" onClick={() => setShowAiInput(false)}>Annuler</Button>
+              <Button size="sm" onClick={handleAiSummarize} disabled={summarizing || !rawNotes.trim()}
+                className="bg-purple-600 hover:bg-purple-700 text-white">
+                {summarizing ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Sparkles className="mr-2 h-3.5 w-3.5" />}
+                Structurer
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4 py-2">
           <div className="space-y-1">
             <Label>Type de constat</Label>
@@ -235,6 +297,7 @@ function CapaModal({ open, auditId, findingId, capa, onClose, onSaved }: CapaMod
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -250,6 +313,27 @@ function CapaModal({ open, auditId, findingId, capa, onClose, onSaved }: CapaMod
       setError(null);
     }
   }, [open, capa]);
+
+  async function handleAiSuggest() {
+    if (!findingId) return;
+    setSuggesting(true);
+    try {
+      const result = await auditsApi.suggestCapa(auditId, findingId);
+      setForm(f => ({
+        ...f,
+        title: result.title || f.title,
+        description: result.description || f.description,
+        rootCause: result.rootCause || f.rootCause,
+        actionType: result.actionType || f.actionType,
+        priority: result.priority || f.priority,
+      }));
+      toast.success("CAPA suggérée par l'IA");
+    } catch {
+      toast.error("Échec de la suggestion IA");
+    } finally {
+      setSuggesting(false);
+    }
+  }
 
   async function handleSave() {
     if (!form.title.trim()) { setError("Le titre est requis."); return; }
@@ -290,7 +374,20 @@ function CapaModal({ open, auditId, findingId, capa, onClose, onSaved }: CapaMod
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Modifier la CAPA" : "Nouvelle CAPA"}</DialogTitle>
+          <DialogTitle className="flex items-center justify-between">
+            <span>{isEdit ? "Modifier la CAPA" : "Nouvelle CAPA"}</span>
+            {!isEdit && findingId && (
+              <button
+                type="button"
+                onClick={handleAiSuggest}
+                disabled={suggesting}
+                className="flex items-center gap-1.5 text-xs text-purple-600 hover:text-purple-700 font-medium px-2 py-1 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+              >
+                {suggesting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                Suggérer avec l&apos;IA
+              </button>
+            )}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1">
@@ -384,6 +481,13 @@ export default function AuditDetailPage() {
     findingId?: string;
     editing?: AuditCapa | null;
   }>({ open: false });
+
+  const [askAiOpen, setAskAiOpen] = useState(false);
+  const [askQuestion, setAskQuestion] = useState("");
+  const [askAnswer, setAskAnswer] = useState<{
+    answer: string; references?: string[]; confidence?: string; disclaimer?: string;
+  } | null>(null);
+  const [askLoading, setAskLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -535,6 +639,20 @@ export default function AuditDetailPage() {
     }
   }
 
+  async function handleAskAi() {
+    if (!audit || !askQuestion.trim()) return;
+    setAskLoading(true);
+    setAskAnswer(null);
+    try {
+      const result = await auditsApi.askAudit(audit.id, askQuestion);
+      setAskAnswer(result);
+    } catch {
+      toast.error("Impossible de contacter l'IA");
+    } finally {
+      setAskLoading(false);
+    }
+  }
+
   const totalQuestions = audit?.sections.reduce((s, sec) => s + sec.questions.length, 0) ?? 0;
   const answeredCount = audit?.responses.filter(r => r.conformity && r.conformity !== "pending").length ?? 0;
   const progressPct = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
@@ -588,6 +706,15 @@ export default function AuditDetailPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setAskAiOpen(v => !v); setAskAnswer(null); setAskQuestion(""); }}
+            className="border-purple-200 text-purple-700 hover:bg-purple-50"
+          >
+            <Bot className="mr-1.5 h-4 w-4" />
+            Demander à l&apos;IA
+          </Button>
           {audit.status === "draft" && (
             <Button onClick={handleActivate} disabled={actionLoading === "activate"}>
               {actionLoading === "activate" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -616,6 +743,47 @@ export default function AuditDetailPage() {
           )}
         </div>
       </div>
+
+      {/* ── Ask AI panel ── */}
+      {askAiOpen && (
+        <div className="rounded-xl border border-purple-200 bg-purple-50 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Bot className="h-4 w-4 text-purple-600" />
+            <p className="text-sm font-semibold text-purple-800">
+              Assistant IA — {audit.referentialName}
+            </p>
+            <button onClick={() => setAskAiOpen(false)} className="ml-auto text-purple-400 hover:text-purple-600 text-xs">✕</button>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={askQuestion}
+              onChange={e => setAskQuestion(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleAskAi()}
+              placeholder={`Ex: Que requiert ${audit.referentialCode} concernant la gestion des accès ?`}
+              className="text-sm bg-white"
+            />
+            <Button onClick={handleAskAi} disabled={askLoading || !askQuestion.trim()}
+              className="bg-purple-600 hover:bg-purple-700 text-white shrink-0">
+              {askLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            </Button>
+          </div>
+          {askAnswer && (
+            <div className="bg-white border border-purple-100 rounded-lg p-4 space-y-2">
+              <p className="text-sm text-slate-800 whitespace-pre-wrap">{askAnswer.answer}</p>
+              {askAnswer.references && askAnswer.references.length > 0 && (
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {askAnswer.references.map((ref, i) => (
+                    <span key={i} className="text-[11px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">{ref}</span>
+                  ))}
+                </div>
+              )}
+              {askAnswer.disclaimer && (
+                <p className="text-xs text-amber-600 border-t border-amber-100 pt-2 mt-2">{askAnswer.disclaimer}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Client portal banner ── */}
       {audit.status === "active" && audit.clientToken && (

@@ -39,6 +39,31 @@ public record ReportNarrative(
     string? CertificationRecommendation
 );
 
+public record FindingSummary(
+    string FindingType,
+    string Title,
+    string Description,
+    string? ObservedEvidence,
+    string? RegulatoryRef,
+    string? Recommendation
+);
+
+public record CapaSuggestion(
+    string Title,
+    string Description,
+    string RootCause,
+    string ActionType,
+    string Priority,
+    string? Rationale
+);
+
+public record AuditAnswer(
+    string Answer,
+    string[]? References,
+    string? Confidence,
+    string? Disclaimer
+);
+
 public record QuestionAnswerPair(
     string QuestionCode, string QuestionText,
     string? AnswerValue, string? AnswerNotes,
@@ -132,6 +157,70 @@ public class AiAnalysisService(IConfiguration config, ILogger<AiAnalysisService>
             "  \"certification_recommendation\": \"Aptitude à la certification si applicable\"\n}";
 
         return await CallClaudeJsonAsync<ReportNarrative>(prompt, ct);
+    }
+
+    // 5.4 — Finding summarizer
+    public async Task<FindingSummary?> SummarizeFindingAsync(
+        string referentialCode, string referentialName,
+        string rawNotes,
+        CancellationToken ct = default)
+    {
+        var prompt = $"Tu es un auditeur expert en {referentialName} ({referentialCode}).\n\n" +
+            "Un auditeur a pris les notes brutes suivantes lors de sa visite de terrain :\n\n" +
+            $"NOTES BRUTES:\n{rawNotes}\n\n" +
+            "Transforme ces notes en un constat d'audit structuré. " +
+            "Réponds UNIQUEMENT avec ce JSON:\n" +
+            "{\n  \"finding_type\": \"nc_critical|nc_major|nc_minor|observation|ofi\",\n" +
+            "  \"title\": \"Titre court et précis (max 120 caractères)\",\n" +
+            "  \"description\": \"Description complète du constat\",\n" +
+            "  \"observed_evidence\": \"Preuves observées ou documents manquants\",\n" +
+            "  \"regulatory_ref\": \"Référence exacte à la clause ou article applicable\",\n" +
+            "  \"recommendation\": \"Action corrective recommandée\"\n}";
+
+        return await CallClaudeJsonAsync<FindingSummary>(prompt, ct);
+    }
+
+    // 5.5 — CAPA suggester
+    public async Task<CapaSuggestion?> SuggestCapaAsync(
+        string findingType, string findingTitle, string? findingDescription,
+        string referentialCode, string referentialName,
+        CancellationToken ct = default)
+    {
+        var desc = string.IsNullOrEmpty(findingDescription) ? "(non renseignée)" : findingDescription;
+        var prompt = $"Tu es un consultant expert en {referentialName} ({referentialCode}) spécialisé en amélioration continue.\n\n" +
+            $"CONSTAT:\n- Type: {findingType}\n- Titre: {findingTitle}\n- Description: {desc}\n\n" +
+            "Propose un plan d'action corrective (CAPA) précis et réaliste pour adresser ce constat.\n" +
+            "Réponds UNIQUEMENT avec ce JSON:\n" +
+            "{\n  \"title\": \"Titre de l'action corrective (max 120 caractères)\",\n" +
+            "  \"description\": \"Description détaillée des étapes à mener\",\n" +
+            "  \"root_cause\": \"Cause racine probable du problème\",\n" +
+            "  \"action_type\": \"corrective|preventive|improvement\",\n" +
+            "  \"priority\": \"critical|high|medium|low\",\n" +
+            "  \"rationale\": \"Justification du choix de cette action et de sa priorité\"\n}";
+
+        return await CallClaudeJsonAsync<CapaSuggestion>(prompt, ct);
+    }
+
+    // 5.6 — Question answering (in-audit context)
+    public async Task<AuditAnswer?> AnswerAuditQuestionAsync(
+        string userQuestion, string referentialCode, string referentialName,
+        string? auditContext,
+        CancellationToken ct = default)
+    {
+        var context = string.IsNullOrEmpty(auditContext) ? "" :
+            $"\nCONTEXTE DE L'AUDIT:\n{auditContext}\n";
+        var prompt = $"Tu es un expert du référentiel {referentialName} ({referentialCode}), " +
+            "disponible pour répondre aux questions d'un auditeur en cours de mission.\n" +
+            context + "\n" +
+            $"QUESTION DE L'AUDITEUR:\n{userQuestion}\n\n" +
+            "Réponds de façon précise, en citant les clauses exactes si applicable. " +
+            "Réponds UNIQUEMENT avec ce JSON:\n" +
+            "{\n  \"answer\": \"Réponse complète à la question\",\n" +
+            "  \"references\": [\"Clause X.Y.Z\", \"Article N\"],\n" +
+            "  \"confidence\": \"high|medium|low\",\n" +
+            "  \"disclaimer\": \"Avertissement si la question dépasse le cadre du référentiel ou nécessite un expert juridique\"\n}";
+
+        return await CallClaudeJsonAsync<AuditAnswer>(prompt, ct);
     }
 
     private async Task<T?> CallClaudeJsonAsync<T>(string prompt, CancellationToken ct)
