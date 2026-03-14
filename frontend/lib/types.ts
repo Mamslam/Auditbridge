@@ -261,6 +261,71 @@ export interface User {
   createdAt: string;
 }
 
+// ── Analytics ─────────────────────────────────────────────────────────────
+
+export interface OverdueAuditItem {
+  id: string;
+  title: string;
+  status: string;
+  dueDate: string;
+  daysOverdue: number;
+  referentialCode?: string;
+}
+
+export interface CapaAgingItem {
+  id: string;
+  title: string;
+  priority: string;
+  status: string;
+  dueDate?: string;
+  daysOverdue?: number;
+  auditTitle: string;
+}
+
+export interface CapaAgingSummary {
+  total: number;
+  overdue: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  overdueItems: CapaAgingItem[];
+}
+
+export interface FindingDistribution {
+  ncCritical: number;
+  ncMajor: number;
+  ncMinor: number;
+  observation: number;
+  ofi: number;
+}
+
+export interface MonthlyScorePoint {
+  month: string;
+  avgScore: number;
+  count: number;
+}
+
+export interface RepeatFinding {
+  title: string;
+  count: number;
+  auditTitles: string[];
+}
+
+export interface DashboardData {
+  totalAudits: number;
+  active: number;
+  submitted: number;
+  completed: number;
+  overdue: number;
+  avgConformityScore?: number;
+  overdueAudits: OverdueAuditItem[];
+  capaAging: CapaAgingSummary;
+  findingDistribution: FindingDistribution;
+  conformityTrend: MonthlyScorePoint[];
+  repeatFindings: RepeatFinding[];
+}
+
 // ── Control Library ───────────────────────────────────────────────────────
 
 export type ControlStatus = "draft" | "active" | "retired";

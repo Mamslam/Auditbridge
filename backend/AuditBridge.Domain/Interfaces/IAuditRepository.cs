@@ -29,4 +29,9 @@ public interface IAuditRepository
     Task<IEnumerable<AuditEvidence>> GetEvidenceByAuditIdAsync(Guid auditId, CancellationToken ct = default);
     Task AddEvidenceAsync(AuditEvidence evidence, CancellationToken ct = default);
     Task DeleteEvidenceAsync(Guid id, CancellationToken ct = default);
+
+    // ── Analytics ─────────────────────────────────────────────────────────
+    Task<IEnumerable<AuditCapa>> GetOpenCapasByOrgAsync(Guid orgId, CancellationToken ct = default);
+    Task<IEnumerable<AuditReport>> GetReportsByOrgAsync(Guid orgId, CancellationToken ct = default);
+    Task<IEnumerable<AuditFinding>> GetAllFindingsByOrgAsync(Guid orgId, CancellationToken ct = default);
 }

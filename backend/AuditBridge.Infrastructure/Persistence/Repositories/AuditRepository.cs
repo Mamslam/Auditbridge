@@ -93,4 +93,42 @@ public class AuditRepository(AppDbContext dbContext) : IAuditRepository
         var evidence = await dbContext.AuditEvidence.FindAsync([id], ct);
         if (evidence is not null) dbContext.AuditEvidence.Remove(evidence);
     }
+
+    // ── Analytics ─────────────────────────────────────────────────────────
+
+    public async Task<IEnumerable<AuditCapa>> GetOpenCapasByOrgAsync(Guid orgId, CancellationToken ct = default)
+    {
+        var auditIds = await dbContext.Audits
+            .Where(a => a.OrgId == orgId)
+            .Select(a => a.Id)
+            .ToListAsync(ct);
+        return await dbContext.AuditCapas
+            .Where(c => auditIds.Contains(c.AuditId) && c.Status != "verified" && c.Status != "cancelled")
+            .OrderBy(c => c.DueDate)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<AuditReport>> GetReportsByOrgAsync(Guid orgId, CancellationToken ct = default)
+    {
+        var auditIds = await dbContext.Audits
+            .Where(a => a.OrgId == orgId)
+            .Select(a => a.Id)
+            .ToListAsync(ct);
+        return await dbContext.AuditReports
+            .Where(r => auditIds.Contains(r.AuditId))
+            .OrderByDescending(r => r.GeneratedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<AuditFinding>> GetAllFindingsByOrgAsync(Guid orgId, CancellationToken ct = default)
+    {
+        var auditIds = await dbContext.Audits
+            .Where(a => a.OrgId == orgId)
+            .Select(a => a.Id)
+            .ToListAsync(ct);
+        return await dbContext.AuditFindings
+            .Where(f => auditIds.Contains(f.AuditId) && f.Status != "closed")
+            .OrderByDescending(f => f.CreatedAt)
+            .ToListAsync(ct);
+    }
 }
