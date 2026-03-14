@@ -389,7 +389,15 @@ public class AuditsController(
 
         var existing = await unitOfWork.Audits.GetReportByAuditIdAsync(id, ct);
         if (existing is null)
+        {
             await unitOfWork.Audits.AddReportAsync(reportRecord, ct);
+        }
+        else
+        {
+            existing.SetPdf(reportRecord.PdfStoragePath!, reportRecord.PdfSha256 ?? "");
+            if (request?.ExecutiveSummary is not null)
+                existing.SetNarrative(request.ExecutiveSummary, "");
+        }
 
         await unitOfWork.SaveChangesAsync(ct);
         return File(pdfBytes, "application/pdf", $"audit-report-{id}.pdf");
