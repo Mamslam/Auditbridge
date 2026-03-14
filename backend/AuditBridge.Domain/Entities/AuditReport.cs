@@ -23,6 +23,14 @@ public class AuditReport
     public int Version { get; private set; } = 1;
     public string Metadata { get; private set; } = "{}";
 
+    /// <summary>Base64 PNG of the auditor's handwritten signature.</summary>
+    public string? AuditorSignatureData { get; private set; }
+    public DateTimeOffset? SignedByAuditorAt { get; private set; }
+
+    /// <summary>Base64 PNG of the auditee's handwritten signature.</summary>
+    public string? AuditeeSignatureData { get; private set; }
+    public DateTimeOffset? SignedByAuditeeAt { get; private set; }
+
     private AuditReport() { }
 
     public static AuditReport Create(
@@ -59,5 +67,17 @@ public class AuditReport
     {
         PdfStoragePath = storagePath;
         PdfSha256 = sha256;
+    }
+
+    public void SetAuditorSignature(string signatureData)
+    {
+        AuditorSignatureData = signatureData;
+        SignedByAuditorAt = DateTimeOffset.UtcNow;
+    }
+
+    public void SetAuditeeSignature(string signatureData)
+    {
+        AuditeeSignatureData = signatureData;
+        SignedByAuditeeAt = DateTimeOffset.UtcNow;
     }
 }

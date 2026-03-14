@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { auditsApi, CreateFindingRequest, CreateCapaRequest } from "@/lib/api/audits";
 import type {
@@ -28,6 +29,7 @@ import {
   CheckCircle2, AlertTriangle, AlertCircle, XCircle, Minus,
   Plus, FileDown, Copy, ExternalLink, RefreshCw, ChevronRight,
   Flag, FlagOff, Loader2, Upload, Trash2, File, Bot, Sparkles,
+  Camera, MapPin, Navigation, PenLine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -119,6 +121,8 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
   const [rawNotes, setRawNotes] = useState("");
   const [summarizing, setSummarizing] = useState(false);
   const [showAiInput, setShowAiInput] = useState(false);
+  const [gps, setGps] = useState<{ lat: number; lng: number; name?: string } | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -132,8 +136,22 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
       setError(null);
       setRawNotes("");
       setShowAiInput(false);
+      setGps(null);
     }
   }, [open, finding]);
+
+  async function handleGps() {
+    if (!navigator.geolocation) { toast.error("GPS non disponible"); return; }
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGpsLoading(false);
+        toast.success("Position capturée");
+      },
+      () => { toast.error("Impossible d'obtenir la position"); setGpsLoading(false); }
+    );
+  }
 
   async function handleAiSummarize() {
     if (!rawNotes.trim()) return;
@@ -180,6 +198,9 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
           description: form.description || undefined,
           observedEvidence: form.observedEvidence || undefined,
           regulatoryRef: form.regulatoryRef || undefined,
+          latitude: gps?.lat,
+          longitude: gps?.lng,
+          locationName: gps?.name || undefined,
         };
         await auditsApi.createFinding(auditId, req);
       }
@@ -259,6 +280,25 @@ function FindingModal({ open, auditId, prefill, finding, onClose, onSaved }: Fin
             <Label>Référence réglementaire</Label>
             <Input value={form.regulatoryRef} onChange={e => setForm(f => ({ ...f, regulatoryRef: e.target.value }))} placeholder="ISO 9001 §8.4.1, Art. 32 RGPD…" />
           </div>
+          {!isEdit && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleGps}
+                disabled={gpsLoading}
+                className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-800 font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                {gpsLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5" />}
+                Localiser
+              </button>
+              {gps && (
+                <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {gps.lat.toFixed(5)}, {gps.lng.toFixed(5)}
+                </span>
+              )}
+            </div>
+          )}
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
         <DialogFooter>
@@ -453,6 +493,124 @@ function CapaModal({ open, auditId, findingId, capa, onClose, onSaved }: CapaMod
   );
 }
 
+// ── Signature modal ───────────────────────────────────────────────────────────
+
+function SignatureModal({
+  open, auditId, role, onClose, onSigned,
+}: {
+  open: boolean;
+  auditId: string;
+  role: "auditor" | "auditee";
+  onClose: () => void;
+  onSigned: () => void;
+}) {
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [drawing, setDrawing] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  function getPos(e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) {
+    const rect = canvas.getBoundingClientRect();
+    if ("touches" in e) {
+      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+    }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  function startDraw(e: React.MouseEvent | React.TouchEvent) {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    const pos = getPos(e, canvas);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
+    setDrawing(true);
+    setIsEmpty(false);
+    e.preventDefault();
+  }
+
+  function draw(e: React.MouseEvent | React.TouchEvent) {
+    if (!drawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    const pos = getPos(e, canvas);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.stroke();
+    e.preventDefault();
+  }
+
+  function endDraw() { setDrawing(false); }
+
+  function clearCanvas() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.getContext("2d")!.clearRect(0, 0, canvas.width, canvas.height);
+    setIsEmpty(true);
+  }
+
+  async function handleSave() {
+    const canvas = canvasRef.current;
+    if (!canvas || isEmpty) return;
+    setSaving(true);
+    try {
+      const dataUrl = canvas.toDataURL("image/png");
+      await auditsApi.signReport(auditId, dataUrl, role);
+      toast.success(role === "auditor" ? "Signature auditeur enregistrée" : "Signature audité enregistrée");
+      onSigned();
+    } catch {
+      toast.error("Échec de la signature");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>
+            {role === "auditor" ? "Signature auditeur" : "Signature audité"}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <p className="text-xs text-slate-500">Signez dans le cadre ci-dessous</p>
+          <canvas
+            ref={canvasRef}
+            width={380}
+            height={160}
+            className="w-full border-2 border-slate-200 rounded-lg bg-slate-50 touch-none cursor-crosshair"
+            onMouseDown={startDraw}
+            onMouseMove={draw}
+            onMouseUp={endDraw}
+            onMouseLeave={endDraw}
+            onTouchStart={startDraw}
+            onTouchMove={draw}
+            onTouchEnd={endDraw}
+          />
+          <button
+            type="button"
+            onClick={clearCanvas}
+            className="text-xs text-slate-400 hover:text-slate-600"
+          >
+            Effacer
+          </button>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Annuler</Button>
+          <Button onClick={handleSave} disabled={saving || isEmpty}>
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Valider la signature
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AuditDetailPage() {
@@ -488,6 +646,8 @@ export default function AuditDetailPage() {
     answer: string; references?: string[]; confidence?: string; disclaimer?: string;
   } | null>(null);
   const [askLoading, setAskLoading] = useState(false);
+
+  const [signModal, setSignModal] = useState<{ open: boolean; role: "auditor" | "auditee" } | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -706,6 +866,13 @@ export default function AuditDetailPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/auditor/audits/${id}/inspect`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <Camera className="h-4 w-4" />
+            Inspection terrain
+          </Link>
           <Button
             variant="outline"
             size="sm"
@@ -739,6 +906,15 @@ export default function AuditDetailPage() {
                 ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 : <FileDown className="mr-2 h-4 w-4" />}
               Rapport PDF
+            </Button>
+          )}
+          {audit.status === "completed" && (
+            <Button variant="outline" size="sm"
+              onClick={() => setSignModal({ open: true, role: "auditor" })}
+              className="border-slate-300 text-slate-700 hover:bg-slate-50"
+            >
+              <PenLine className="mr-1.5 h-4 w-4" />
+              Signer
             </Button>
           )}
         </div>
@@ -1286,22 +1462,41 @@ export default function AuditDetailPage() {
         <TabsContent value="evidence" className="mt-4 space-y-3">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">Pièces jointes ({evidence.length})</h2>
-            <label className={cn(
-              "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
-              "bg-primary text-primary-foreground hover:bg-primary/90 transition-colors",
-              uploadingFile && "opacity-50 pointer-events-none",
-            )}>
-              {uploadingFile
-                ? <Loader2 className="h-4 w-4 animate-spin" />
-                : <Upload className="h-4 w-4" />}
-              {uploadingFile ? "Téléversement…" : "Ajouter un fichier"}
-              <input
-                type="file"
-                className="sr-only"
-                disabled={uploadingFile}
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ""; }}
-              />
-            </label>
+            <div className="flex gap-2">
+              {/* Camera capture — mobile field inspection */}
+              <label className={cn(
+                "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
+                "border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-700",
+                uploadingFile && "opacity-50 pointer-events-none",
+              )}>
+                <Camera className="h-4 w-4" />
+                <span className="hidden sm:inline">Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="sr-only"
+                  disabled={uploadingFile}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ""; }}
+                />
+              </label>
+              <label className={cn(
+                "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium cursor-pointer",
+                "bg-primary text-primary-foreground hover:bg-primary/90 transition-colors",
+                uploadingFile && "opacity-50 pointer-events-none",
+              )}>
+                {uploadingFile
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <Upload className="h-4 w-4" />}
+                {uploadingFile ? "Téléversement…" : "Ajouter un fichier"}
+                <input
+                  type="file"
+                  className="sr-only"
+                  disabled={uploadingFile}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f); e.target.value = ""; }}
+                />
+              </label>
+            </div>
           </div>
 
           {evidence.length === 0 ? (
@@ -1366,6 +1561,15 @@ export default function AuditDetailPage() {
         onClose={() => setCapaModal({ open: false })}
         onSaved={async () => { setCapaModal({ open: false }); await load(); }}
       />
+      {signModal && (
+        <SignatureModal
+          open={signModal.open}
+          auditId={audit.id}
+          role={signModal.role}
+          onClose={() => setSignModal(null)}
+          onSigned={() => { setSignModal(null); toast.success("Rapport signé"); }}
+        />
+      )}
     </div>
   );
 }

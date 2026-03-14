@@ -7,7 +7,10 @@ public record CreateFindingRequest(
     Guid? ResponseId = null,
     string? Description = null,
     string? ObservedEvidence = null,
-    string? RegulatoryRef = null
+    string? RegulatoryRef = null,
+    double? Latitude = null,
+    double? Longitude = null,
+    string? LocationName = null
 );
 
 public record UpdateFindingRequest(
@@ -31,7 +34,22 @@ public record FindingDto(
     string Status,
     List<CapaDto> Capas,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt
+    DateTimeOffset UpdatedAt,
+    double? Latitude = null,
+    double? Longitude = null,
+    string? LocationName = null
+);
+
+public record SignAuditRequest(
+    string SignatureData,   // base64 PNG
+    string SignerRole       // "auditor" | "auditee"
+);
+
+public record SignatureStatusDto(
+    bool AuditorSigned,
+    DateTimeOffset? SignedByAuditorAt,
+    bool AuditeeSigned,
+    DateTimeOffset? SignedByAuditeeAt
 );
 
 public record UpdateCapaRequest(

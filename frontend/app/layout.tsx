@@ -22,6 +22,14 @@ export const metadata: Metadata = {
   title: "AuditBridge — La plateforme d'audit qui connecte l'Europe",
   description:
     "Gérez vos audits GMP, ISO, NIS2, RGPD et plus encore avec l'intelligence artificielle.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AuditBridge",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({

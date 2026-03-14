@@ -330,6 +330,19 @@ namespace AuditBridge.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("latitude");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision")
+                        .HasColumnName("longitude");
+
+                    b.Property<string>("LocationName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("location_name");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AuditId");
@@ -421,6 +434,22 @@ namespace AuditBridge.Infrastructure.Migrations
                     b.Property<int>("Version")
                         .HasColumnType("integer")
                         .HasColumnName("version");
+
+                    b.Property<string>("AuditorSignatureData")
+                        .HasColumnType("text")
+                        .HasColumnName("auditor_signature_data");
+
+                    b.Property<DateTimeOffset?>("SignedByAuditorAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_by_auditor_at");
+
+                    b.Property<string>("AuditeeSignatureData")
+                        .HasColumnType("text")
+                        .HasColumnName("auditee_signature_data");
+
+                    b.Property<DateTimeOffset?>("SignedByAuditeeAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_by_auditee_at");
 
                     b.HasKey("Id");
 

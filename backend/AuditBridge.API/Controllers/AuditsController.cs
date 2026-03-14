@@ -474,6 +474,51 @@ public class AuditsController(
             report.ExecutiveSummary, report.PdfStoragePath, report.GeneratedAt));
     }
 
+    // ── Signatures ────────────────────────────────────────────────────────
+
+    [HttpPost("{id:guid}/sign")]
+    public async Task<IActionResult> SignReport(Guid id, [FromBody] SignAuditRequest request, CancellationToken ct)
+    {
+        if (CurrentOrgId is null) return Unauthorized();
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+
+        var report = await unitOfWork.Audits.GetReportByAuditIdAsync(id, ct);
+        if (report is null) return BadRequest("Generate a report before signing.");
+
+        if (string.IsNullOrWhiteSpace(request.SignatureData))
+            return BadRequest("signatureData is required.");
+
+        if (request.SignerRole == "auditor")
+            report.SetAuditorSignature(request.SignatureData);
+        else if (request.SignerRole == "auditee")
+            report.SetAuditeeSignature(request.SignatureData);
+        else
+            return BadRequest("signerRole must be 'auditor' or 'auditee'.");
+
+        await unitOfWork.SaveChangesAsync(ct);
+        return Ok(new SignatureStatusDto(
+            AuditorSigned: report.AuditorSignatureData is not null,
+            SignedByAuditorAt: report.SignedByAuditorAt,
+            AuditeeSigned: report.AuditeeSignatureData is not null,
+            SignedByAuditeeAt: report.SignedByAuditeeAt));
+    }
+
+    [HttpGet("{id:guid}/signatures")]
+    public async Task<IActionResult> GetSignatureStatus(Guid id, CancellationToken ct)
+    {
+        if (CurrentOrgId is null) return Unauthorized();
+        var audit = await unitOfWork.Audits.GetByIdAsync(id, ct);
+        if (audit is null || audit.OrgId != CurrentOrgId) return NotFound();
+        var report = await unitOfWork.Audits.GetReportByAuditIdAsync(id, ct);
+        if (report is null) return Ok(new SignatureStatusDto(false, null, false, null));
+        return Ok(new SignatureStatusDto(
+            AuditorSigned: report.AuditorSignatureData is not null,
+            SignedByAuditorAt: report.SignedByAuditorAt,
+            AuditeeSigned: report.AuditeeSignatureData is not null,
+            SignedByAuditeeAt: report.SignedByAuditeeAt));
+    }
+
     // ── Client portal ─────────────────────────────────────────────────────
 
     [AllowAnonymous]
@@ -554,7 +599,8 @@ public class AuditsController(
         f.FindingType, f.Title, f.Description, f.ObservedEvidence,
         f.RegulatoryRef, f.Status,
         f.Capas.Select(MapCapaDto).ToList(),
-        f.CreatedAt, f.UpdatedAt);
+        f.CreatedAt, f.UpdatedAt,
+        f.Latitude, f.Longitude, f.LocationName);
 
     private static AuditScoreDto MapScoreDto(AuditScoreResult s) => new(
         s.GlobalScore, s.TotalQuestions, s.TotalAnswered,

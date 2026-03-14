@@ -24,6 +24,25 @@ public class ReferentialsController(IUnitOfWork unitOfWork, IHttpContextAccessor
         return Ok(result);
     }
 
+    // GET /api/referentials/public — no auth, for marketplace page
+    [AllowAnonymous]
+    [HttpGet("public")]
+    public async Task<IActionResult> GetPublic(CancellationToken ct)
+    {
+        var refs = await unitOfWork.Referentials.GetAllAccessibleAsync(null, ct);
+        var system = refs.Where(r => r.IsSystem || r.IsPublic)
+                         .OrderBy(r => r.Category?.Label)
+                         .ThenBy(r => r.Name);
+        return Ok(system.Select(r => new {
+            r.Id, r.Code, r.Name, r.Description, r.Version, r.IsSystem,
+            Category = r.Category?.Label,
+            CategorySlug = r.Category?.Slug,
+            CategoryColor = r.Category?.ColorHex,
+            QuestionCount = r.Sections.Sum(s => s.Questions.Count),
+            SectionCount = r.Sections.Count,
+        }));
+    }
+
     // GET /api/referentials
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)

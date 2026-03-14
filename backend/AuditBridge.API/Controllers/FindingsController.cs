@@ -61,7 +61,10 @@ public class FindingsController(IUnitOfWork unitOfWork, IHttpContextAccessor htt
                 responseId: request.ResponseId,
                 description: request.Description,
                 observedEvidence: request.ObservedEvidence,
-                regulatoryRef: request.RegulatoryRef);
+                regulatoryRef: request.RegulatoryRef,
+                latitude: request.Latitude,
+                longitude: request.Longitude,
+                locationName: request.LocationName);
         }
         catch (ArgumentException ex) { return BadRequest(ex.Message); }
 

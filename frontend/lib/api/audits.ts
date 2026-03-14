@@ -22,6 +22,9 @@ export interface CreateFindingRequest {
   description?: string;
   observedEvidence?: string;
   regulatoryRef?: string;
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
 }
 
 export interface CreateCapaRequest {
@@ -186,6 +189,18 @@ export const auditsApi = {
     api.post<{
       answer: string; references?: string[]; confidence?: string; disclaimer?: string;
     }>(`/api/audits/${auditId}/ask`, { question, auditContext }),
+
+  signReport: (auditId: string, signatureData: string, signerRole: "auditor" | "auditee") =>
+    api.post<{
+      auditorSigned: boolean; signedByAuditorAt?: string;
+      auditeeSigned: boolean; signedByAuditeeAt?: string;
+    }>(`/api/audits/${auditId}/sign`, { signatureData, signerRole }),
+
+  getSignatureStatus: (auditId: string) =>
+    api.get<{
+      auditorSigned: boolean; signedByAuditorAt?: string;
+      auditeeSigned: boolean; signedByAuditeeAt?: string;
+    }>(`/api/audits/${auditId}/signatures`),
 
   // ── Client portal (anonymous, token-based) ────────────────────────────
   getByToken: (token: string) =>

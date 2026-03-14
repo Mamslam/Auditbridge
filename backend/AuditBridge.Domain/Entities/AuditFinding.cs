@@ -36,6 +36,15 @@ public class AuditFinding
     /// <summary>open | acknowledged | closed</summary>
     public string Status { get; private set; } = "open";
 
+    /// <summary>GPS latitude where the finding was recorded (field inspection).</summary>
+    public double? Latitude { get; private set; }
+
+    /// <summary>GPS longitude where the finding was recorded (field inspection).</summary>
+    public double? Longitude { get; private set; }
+
+    /// <summary>Human-readable location label (e.g. "Atelier B – Zone emballage").</summary>
+    public string? LocationName { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
@@ -53,7 +62,10 @@ public class AuditFinding
         Guid? responseId = null,
         string? description = null,
         string? observedEvidence = null,
-        string? regulatoryRef = null)
+        string? regulatoryRef = null,
+        double? latitude = null,
+        double? longitude = null,
+        string? locationName = null)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required.", nameof(title));
@@ -73,6 +85,9 @@ public class AuditFinding
             Description = description,
             ObservedEvidence = observedEvidence,
             RegulatoryRef = regulatoryRef,
+            Latitude = latitude,
+            Longitude = longitude,
+            LocationName = locationName,
             Status = "open",
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
